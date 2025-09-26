@@ -2,13 +2,13 @@
 /* Use class-based dark mode in Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Neo-Brutalism Orange Theme Variables */
+/* Neo-Brutalism Golden Theme Variables */
 :root {
-  --orange-primary: #ff6b35;
-  --orange-secondary: #ff8c42;
-  --orange-light: #ffb366;
-  --orange-dark: #e55a2b;
-  --orange-darker: #cc4a1f;
+  --orange-primary: #fcad4e;
+  --orange-secondary: #fbbf24;
+  --orange-light: #fde68a;
+  --orange-dark: #f59e0b;
+  --orange-darker: #d97706;
   --black: #1a1a1a;
   --white: #ffffff;
   --gray-light: #f5f5f5;
@@ -20,11 +20,11 @@
 }
 
 .dark {
-  --orange-primary: #ff8c42;
-  --orange-secondary: #ffb366;
-  --orange-light: #ffc299;
-  --orange-dark: #ff6b35;
-  --orange-darker: #e55a2b;
+  --orange-primary: #fbbf24;
+  --orange-secondary: #fde68a;
+  --orange-light: #fef3c7;
+  --orange-dark: #fcad4e;
+  --orange-darker: #f59e0b;
   --black: #ffffff;
   --white: #1a1a1a;
   --gray-light: #2a2a2a;
@@ -34,11 +34,11 @@
 
 /* Ensure dark mode variables are applied */
 html.dark {
-  --orange-primary: #ff8c42;
-  --orange-secondary: #ffb366;
-  --orange-light: #ffc299;
-  --orange-dark: #ff6b35;
-  --orange-darker: #e55a2b;
+  --orange-primary: #fbbf24;
+  --orange-secondary: #fde68a;
+  --orange-light: #fef3c7;
+  --orange-dark: #fcad4e;
+  --orange-darker: #f59e0b;
   --black: #ffffff;
   --white: #1a1a1a;
   --gray-light: #2a2a2a;
@@ -283,6 +283,14 @@ html {
 
 .bg-orange-600 {
   background-color: var(--orange-dark) !important;
+}
+
+.bg-orange-400 {
+  background-color: var(--orange-secondary) !important;
+}
+
+.bg-orange-300 {
+  background-color: var(--orange-light) !important;
 }
 
 /* Global body styles */

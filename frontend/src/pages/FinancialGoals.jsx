@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Target, Calendar, DollarSign, TrendingUp, Edit3, Trash2, Brain, Clock, CheckCircle } from 'lucide-react';
 import { financialGoalsAPI } from '../services/api';
+import FloatingActionButton from '../components/FloatingActionButton';
 
 const FinancialGoals = () => {
   const [goals, setGoals] = useState([]);
@@ -153,6 +154,7 @@ const FinancialGoals = () => {
     }
   };
 
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -209,16 +211,6 @@ const FinancialGoals = () => {
         <p className="text-black font-bold text-lg">Set and track your financial objectives with AI-powered roadmaps.</p>
       </div>
 
-      {/* Add Goal Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-6 py-3 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce flex items-center gap-2"
-        >
-          <Plus size={20} />
-          <span>Add Goal</span>
-        </button>
-      </div>
 
       {/* Goals Grid */}
       {goals.length === 0 ? (
@@ -236,44 +228,29 @@ const FinancialGoals = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {goals.map((goal) => (
-            <div key={goal._id} className="brutal-card bg-orange-50 dark:bg-orange-100 p-6 relative">
+            <div key={goal._id} className="brutal-card bg-orange-50 dark:bg-orange-100 p-4 relative">
               {/* Priority Indicator */}
               <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${getPriorityColor(goal.priority)}`}></div>
               
               {/* Category Icon */}
-              <div className="text-4xl mb-4">{getCategoryIcon(goal.category)}</div>
+              <div className="text-3xl mb-3">{getCategoryIcon(goal.category)}</div>
               
               {/* Goal Info */}
-              <div className="mb-4">
-                <h3 className="text-lg font-black text-black uppercase tracking-wide mb-2">{goal.title}</h3>
+              <div className="mb-3">
+                <h3 className="text-base font-black text-black uppercase tracking-wide mb-2">{goal.title}</h3>
                 {goal.description && (
-                  <p className="text-sm text-black font-bold mb-2">{goal.description}</p>
+                  <p className="text-xs text-black font-bold mb-2">{goal.description}</p>
                 )}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-black">Target:</span>
-                    <span className="text-sm font-black text-black">{formatAmount(goal.targetAmount)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-black">Current:</span>
-                    <span className="text-sm font-black text-black">{formatAmount(goal.currentAmount)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-black">Progress:</span>
-                    <span className="text-sm font-black text-black">{Math.round(goal.progressPercentage)}%</span>
+                    <span className="text-xs font-bold text-black">Target:</span>
+                    <span className="text-xs font-black text-black">{formatAmount(goal.targetAmount)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 brutal-border mb-4">
-                <div 
-                  className="h-2 bg-orange-500 transition-all duration-300"
-                  style={{ width: `${Math.min(goal.progressPercentage, 100)}%` }}
-                ></div>
-              </div>
 
               {/* Goal Details */}
               <div className="space-y-2 mb-4">
@@ -292,27 +269,27 @@ const FinancialGoals = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-2">
                 <button
                   onClick={() => handleEdit(goal)}
-                  className="flex-1 px-3 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm flex items-center justify-center gap-1"
+                  className="flex-1 px-2 py-1 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1"
                 >
-                  <Edit3 size={14} />
+                  <Edit3 size={12} />
                   <span>Edit</span>
                 </button>
                 <button
                   onClick={() => handleGenerateRoadmap(goal)}
                   disabled={submitting}
-                  className="flex-1 px-3 py-2 bg-purple-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm flex items-center justify-center gap-1 disabled:opacity-50"
+                  className="flex-1 px-2 py-1 bg-purple-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1 disabled:opacity-50"
                 >
-                  <Brain size={14} />
-                  <span>AI Roadmap</span>
+                  <Brain size={12} />
+                  <span>AI</span>
                 </button>
                 <button
                   onClick={() => handleDelete(goal._id)}
-                  className="px-3 py-2 bg-red-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm"
+                  className="flex-1 px-2 py-1 bg-red-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={12} />
                 </button>
               </div>
             </div>
@@ -571,6 +548,12 @@ const FinancialGoals = () => {
           </div>
         </div>
       )}
+
+      {/* Floating Action Button */}
+      <FloatingActionButton 
+        onClick={() => setShowForm(true)}
+        label="Add Goal"
+      />
     </div>
   );
 };
