@@ -1,26 +1,19 @@
 import { useState, useEffect } from 'react';
-import { 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
-  Activity,
-  Calendar,
-  Clock,
-  BarChart3,
-  PieChart
-} from 'lucide-react';
-import { protectedAPI } from '../services/api';
+import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { transactionAPI } from '../services/api';
 
 const Dashboard = () => {
-  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
+  const [recent, setRecent] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await protectedAPI.getDashboard();
+        const response = await transactionAPI.getTransactions({ page: 1, limit: 5 });
         if (response.success) {
-          setDashboardData(response.data);
+          setSummary(response.data.summary ?? { totalIncome: 0, totalExpense: 0, balance: 0 });
+          setRecent(response.data.transactions ?? []);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -32,152 +25,86 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const stats = [
-    {
-      title: 'Total Users',
-      value: '1,234',
-      change: '+12%',
-      changeType: 'positive',
-      icon: Users,
-      color: 'blue'
-    },
-    {
-      title: 'Revenue',
-      value: '$45,678',
-      change: '+8%',
-      changeType: 'positive',
-      icon: DollarSign,
-      color: 'green'
-    },
-    {
-      title: 'Growth Rate',
-      value: '23.5%',
-      change: '+2.1%',
-      changeType: 'positive',
-      icon: TrendingUp,
-      color: 'purple'
-    },
-    {
-      title: 'Active Users',
-      value: '892',
-      change: '-3%',
-      changeType: 'negative',
-      icon: Activity,
-      color: 'orange'
-    }
-  ];
-
-  const recentActivities = [
-    { id: 1, action: 'New user registered', time: '2 minutes ago', type: 'user' },
-    { id: 2, action: 'Payment received', time: '5 minutes ago', type: 'payment' },
-    { id: 3, action: 'System backup completed', time: '1 hour ago', type: 'system' },
-    { id: 4, action: 'Report generated', time: '2 hours ago', type: 'report' },
-    { id: 5, action: 'User profile updated', time: '3 hours ago', type: 'user' },
-  ];
+  const formatAmount = (amount) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(amount || 0);
 
   if (loading) {
     return (
-      <div className="dashboard-loading">
-        <div className="spinner-large"></div>
-        <p>Loading dashboard...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p>Welcome back! Here's what's happening with your account.</p>
+    <div className="h-full p-6 space-y-6 overflow-y-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Overview</h1>
+        <p className="text-gray-600 dark:text-gray-400">Quick summary of your finances.</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="stats-grid">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div key={index} className={`stat-card ${stat.color}`}>
-              <div className="stat-icon">
-                <Icon size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stat.value}</div>
-                <div className="stat-title">{stat.title}</div>
-                <div className={`stat-change ${stat.changeType}`}>
-                  {stat.change}
-                </div>
-              </div>
+      {/* Finance Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm border-l-4 border-l-green-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+              <TrendingUp size={24} className="text-green-600 dark:text-green-400" />
             </div>
-          );
-        })}
-      </div>
-
-      <div className="dashboard-content">
-        {/* Charts Section */}
-        <div className="charts-section">
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>Analytics Overview</h3>
-              <div className="chart-controls">
-                <button className="chart-button active">
-                  <BarChart3 size={16} />
-                  Bar Chart
-                </button>
-                <button className="chart-button">
-                  <PieChart size={16} />
-                  Pie Chart
-                </button>
-              </div>
-            </div>
-            <div className="chart-placeholder">
-              <BarChart3 size={48} />
-              <p>Chart visualization would go here</p>
-            </div>
-          </div>
-
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>Recent Activity</h3>
-              <button className="view-all-button">View All</button>
-            </div>
-            <div className="activity-list">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-icon">
-                    <Clock size={16} />
-                  </div>
-                  <div className="activity-content">
-                    <div className="activity-action">{activity.action}</div>
-                    <div className="activity-time">{activity.time}</div>
-                  </div>
-                </div>
-              ))}
+            <div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Income</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatAmount(summary.totalIncome)}</div>
             </div>
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="quick-actions">
-          <h3>Quick Actions</h3>
-          <div className="actions-grid">
-            <button className="action-button">
-              <Users size={20} />
-              <span>Add User</span>
-            </button>
-            <button className="action-button">
-              <Calendar size={20} />
-              <span>Schedule Event</span>
-            </button>
-            <button className="action-button">
-              <BarChart3 size={20} />
-              <span>Generate Report</span>
-            </button>
-            <button className="action-button">
-              <Activity size={20} />
-              <span>View Analytics</span>
-            </button>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm border-l-4 border-l-red-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
+              <TrendingDown size={24} className="text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Expense</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatAmount(summary.totalExpense)}</div>
+            </div>
           </div>
         </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm border-l-4 border-l-blue-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <TrendingUp size={24} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Balance</div>
+              <div className={`text-2xl font-bold ${summary.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{formatAmount(summary.balance)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Transactions</h3>
+          <a href="/dashboard/transactions" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+        </div>
+        {recent.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-400">No recent transactions.</p>
+        ) : (
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {recent.map((t) => (
+              <div key={t._id} className="py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-md flex items-center justify-center ${t.type === 'income' ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'}`}>₹</div>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">{t.title}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 inline-flex items-center gap-1"><Calendar size={12} />{new Date(t.date).toLocaleDateString()}</div>
+                  </div>
+                </div>
+                <div className={`font-semibold ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{formatAmount(t.amount)}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

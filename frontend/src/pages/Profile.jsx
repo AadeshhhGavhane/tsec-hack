@@ -60,36 +60,34 @@ const Profile = () => {
   };
 
   return (
-    <div className="profile">
-      <div className="profile-header">
-        <h1>Profile Settings</h1>
-        <p>Manage your account information and preferences</p>
+    <div className="h-full p-6 space-y-6 overflow-y-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Profile Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400">Manage your account information and preferences</p>
       </div>
 
-      <div className="profile-content">
-        <div className="profile-card">
-          <div className="profile-avatar-section">
-            <div className="profile-avatar">
-              <User size={48} />
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-6 pb-6 mb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center">
+              <User size={32} />
             </div>
-            <div className="profile-info">
-              <h2>{user?.name}</h2>
-              <p>{user?.email}</p>
-              <div className="profile-meta">
-                <span className="meta-item">
-                  <Calendar size={16} />
-                  Member since {new Date(user?.createdAt).toLocaleDateString()}
-                </span>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{user?.name}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{user?.email}</p>
+              <div className="flex items-center gap-3 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                <Calendar size={16} />
+                <span>Member since {new Date(user?.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>
 
-          <div className="profile-form-section">
-            <div className="form-header">
-              <h3>Account Information</h3>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Account Information</h3>
               {!isEditing && (
                 <button 
-                  className="edit-button"
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm inline-flex items-center gap-2"
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit3 size={16} />
@@ -99,14 +97,14 @@ const Profile = () => {
             </div>
 
             {message && (
-              <div className={`message ${message.includes('success') ? 'success' : 'error'}`}>
+              <div className={`px-4 py-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'}`}>
                 {message}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="profile-form">
-              <div className="form-group">
-                <label htmlFor="name" className="form-label">
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300 inline-flex items-center gap-2">
                   <User size={16} />
                   Full Name
                 </label>
@@ -116,14 +114,14 @@ const Profile = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="form-input"
+                  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={!isEditing}
                   required
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 inline-flex items-center gap-2">
                   <Mail size={16} />
                   Email Address
                 </label>
@@ -133,17 +131,17 @@ const Profile = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="form-input"
+                  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={!isEditing}
                   required
                 />
               </div>
 
               {isEditing && (
-                <div className="form-actions">
+                <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
-                    className="cancel-button"
+                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                     onClick={handleCancel}
                     disabled={loading}
                   >
@@ -151,11 +149,11 @@ const Profile = () => {
                   </button>
                   <button
                     type="submit"
-                    className="save-button"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg inline-flex items-center gap-2 disabled:opacity-50"
                     disabled={loading}
                   >
                     {loading ? (
-                      <div className="spinner-small"></div>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <>
                         <Save size={16} />
@@ -169,18 +167,18 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="profile-stats">
-          <div className="stat-item">
-            <div className="stat-label">Account Status</div>
-            <div className="stat-value active">Active</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="text-sm text-gray-600 dark:text-gray-400">Account Status</div>
+            <div className="mt-1 font-semibold text-green-600 dark:text-green-400">Active</div>
           </div>
-          <div className="stat-item">
-            <div className="stat-label">Last Login</div>
-            <div className="stat-value">Just now</div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="text-sm text-gray-600 dark:text-gray-400">Last Login</div>
+            <div className="mt-1 font-semibold text-gray-900 dark:text-white">Just now</div>
           </div>
-          <div className="stat-item">
-            <div className="stat-label">Account Type</div>
-            <div className="stat-value">Standard</div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="text-sm text-gray-600 dark:text-gray-400">Account Type</div>
+            <div className="mt-1 font-semibold text-gray-900 dark:text-white">Standard</div>
           </div>
         </div>
       </div>

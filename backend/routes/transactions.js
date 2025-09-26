@@ -1,72 +1,302 @@
 const express = require('express');
-const { body, query, param } = require('express-validator');
+// express-validator removed in favor of Zod
 const Transaction = require('../models/Transaction');
 const Category = require('../models/Category');
+const HiddenCategory = require('../models/HiddenCategory');
 const { authenticateToken } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+const { parseBody, CreateTransactionSchema, UpdateTransactionSchema } = require('../middleware/validation');
+const multer = require('multer');
+const fs = require('fs');
+const Groq = require('groq-sdk');
+const { z } = require('zod');
 
 const router = express.Router();
+// Multer setup for single image upload (memory storage)
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Validation middleware for transactions
-const validateTransaction = [
-  body('title')
-    .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Title must be between 3 and 100 characters'),
-  body('amount')
-    .isFloat({ min: 0.01, max: 999999999 })
-    .withMessage('Amount must be between ₹0.01 and ₹999,999,999'),
-  body('category')
-    .trim()
-    .notEmpty()
-    .withMessage('Category is required'),
-  body('type')
-    .isIn(['income', 'expense'])
-    .withMessage('Type must be either income or expense'),
-  body('date')
-    .optional()
-    .isISO8601()
-    .withMessage('Date must be a valid ISO date'),
-  body('description')
-    .optional()
-    .trim()
-    .isLength({ max: 500 })
-    .withMessage('Description cannot exceed 500 characters'),
-  handleValidationErrors
-];
+// Helper: build JSON schema for response format using dynamic categories
+function buildJsonSchema(categoryEnum) {
+  return {
+    type: 'object',
+    properties: {
+      record_flow: { type: 'string', enum: ['expense', 'income'] },
+      record_title: { type: 'string' },
+      record_amount: { type: 'number' },
+      record_category: { type: 'string', enum: categoryEnum },
+      record_description: { type: 'string' }
+    },
+    required: ['record_flow', 'record_title', 'record_amount', 'record_category', 'record_description']
+  };
+}
 
-const validateQuery = [
-  query('page')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('Page must be a positive integer'),
-  query('limit')
-    .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage('Limit must be between 1 and 100'),
-  query('type')
-    .optional()
-    .isIn(['income', 'expense'])
-    .withMessage('Type must be either income or expense'),
-  query('category')
-    .optional()
-    .isMongoId()
-    .withMessage('Category must be a valid ID'),
-  query('startDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Start date must be a valid ISO date'),
-  query('endDate')
-    .optional()
-    .isISO8601()
-    .withMessage('End date must be a valid ISO date'),
-  handleValidationErrors
-];
+// @route   POST /api/transactions/analyze-image
+// @desc    Analyze uploaded image and extract transaction fields
+// @access  Private
+router.post('/analyze-image', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image uploaded' });
+    }
+
+    const base64Image = req.file.buffer.toString('base64');
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ success: false, message: 'GROQ_API_KEY not configured' });
+    }
+
+    // Build dynamic category enum for this user (default + custom, excluding hidden defaults)
+    const userId = req.userId;
+    const hidden = await HiddenCategory.find({ userId }).select('categoryId');
+    const hiddenIds = new Set(hidden.map(h => h.categoryId.toString()));
+    const cats = await Category.find({ userId }).select('name');
+    const allowedCategories = cats
+      .map(c => c.name)
+      .sort((a, b) => a.localeCompare(b));
+
+    if (allowedCategories.length === 0) {
+      return res.status(400).json({ success: false, message: 'No categories available for analysis' });
+    }
+
+    // Build dynamic validators
+    const RecordFlow = z.enum(['expense', 'income']);
+    const CategoryEnum = z.enum(allowedCategories);
+    const TransactionAnalysisSchema = z.object({
+      record_flow: RecordFlow,
+      record_title: z.string(),
+      record_amount: z.number(),
+      record_category: CategoryEnum,
+      record_description: z.string()
+    });
+
+    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const response = await client.chat.completions.create({
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a UPI transaction analyzer. Analyze the transaction receipt image and extract only the following fields as JSON using the provided schema: record_flow (expense|income), record_title (string), record_amount (number), record_category (string), record_description (string). Output JSON only. Be precise with the amount and concise with title/category/description.'
+        },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analyze this UPI transaction receipt and extract all relevant information in structured format.' },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
+          ]
+        }
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'transaction_analysis', schema: buildJsonSchema(allowedCategories) }
+      }
+    });
+
+    const raw = JSON.parse(response.choices?.[0]?.message?.content || '{}');
+
+    // Normalize category to closest allowed match if needed
+    function normalize(str) {
+      return String(str || '').toLowerCase().trim();
+    }
+    function jaccardSimilarity(a, b) {
+      const setA = new Set(normalize(a).split(/\s+/).filter(Boolean));
+      const setB = new Set(normalize(b).split(/\s+/).filter(Boolean));
+      if (setA.size === 0 || setB.size === 0) return 0;
+      const intersection = new Set([...setA].filter(x => setB.has(x))).size;
+      const union = new Set([...setA, ...setB]).size;
+      return intersection / union;
+    }
+    function bestCategoryMatch(input, allowed) {
+      const nInput = normalize(input);
+      if (!nInput) return null;
+      // Exact case-insensitive
+      const exact = allowed.find(c => normalize(c) === nInput);
+      if (exact) return exact;
+      // Starts with
+      const starts = allowed.find(c => normalize(c).startsWith(nInput) || nInput.startsWith(normalize(c)));
+      if (starts) return starts;
+      // Jaccard best
+      let best = null, bestScore = 0;
+      for (const c of allowed) {
+        const s = jaccardSimilarity(c, nInput);
+        if (s > bestScore) { bestScore = s; best = c; }
+      }
+      return bestScore >= 0.4 ? best : null;
+    }
+
+    const mappedCategory = bestCategoryMatch(raw.record_category, allowedCategories);
+    if (mappedCategory) {
+      raw.record_category = mappedCategory;
+    } else {
+      // Fallback to Other ... if available based on flow
+      const flow = (raw.record_flow === 'income') ? 'income' : 'expense';
+      const fallback = allowedCategories.find(c => normalize(c).includes('other') && (flow === 'income' ? normalize(c).includes('income') : normalize(c).includes('expense')))
+        || (flow === 'income' ? 'Other Income' : 'Other Expense');
+      if (allowedCategories.includes(fallback)) raw.record_category = fallback;
+      else raw.record_category = allowedCategories[0];
+    }
+
+    const parsed = TransactionAnalysisSchema.parse(raw);
+
+    return res.json({
+      success: true,
+      data: {
+        record_flow: parsed.record_flow,
+        record_title: parsed.record_title,
+        record_amount: parsed.record_amount,
+        record_category: parsed.record_category,
+        record_description: parsed.record_description
+      }
+    });
+  } catch (error) {
+    console.error('Analyze image error:', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to analyze image' });
+  }
+});
+
+// @route   POST /api/transactions/analyze-audio
+// @desc    Analyze uploaded audio and extract transaction fields
+// @access  Private
+router.post('/analyze-audio', authenticateToken, upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No audio uploaded' });
+    }
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ success: false, message: 'GROQ_API_KEY not configured' });
+    }
+
+    // Build allowed categories for this user
+    const userId = req.userId;
+    const cats = await Category.find({ userId }).select('name');
+    const allowedCategories = cats.map(c => c.name).sort((a, b) => a.localeCompare(b));
+    if (allowedCategories.length === 0) {
+      return res.status(400).json({ success: false, message: 'No categories available for analysis' });
+    }
+
+    const RecordFlow = z.enum(['expense', 'income']);
+    const CategoryEnum = z.enum(allowedCategories);
+    const TransactionAnalysisSchema = z.object({
+      record_flow: RecordFlow,
+      record_title: z.string(),
+      record_amount: z.number(),
+      record_category: CategoryEnum,
+      record_description: z.string()
+    });
+
+    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    // 1) Transcribe audio
+    const tmpPath = `audio-${Date.now()}.webm`;
+    await fs.promises.writeFile(tmpPath, req.file.buffer);
+    const transcription = await client.audio.transcriptions.create({
+      file: fs.createReadStream(tmpPath),
+      model: 'whisper-large-v3-turbo',
+      response_format: 'verbose_json',
+      language: 'en',
+      temperature: 0
+    });
+    try { await fs.promises.unlink(tmpPath); } catch {}
+
+    const text = transcription?.text || '';
+
+    // 2) Ask LLM to structure the transcription to our schema
+    const response = await client.chat.completions.create({
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a voice transaction analyzer. Extract only these fields as JSON: record_flow (expense|income), record_title (string), record_amount (number), record_category (string; must be one of the provided list), record_description (string). Output JSON only.'
+        },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: `Categories list: ${allowedCategories.join(', ')}` },
+            { type: 'text', text: `Transcription: ${text}` }
+          ]
+        }
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'transaction_analysis', schema: (function(){
+          return {
+            type: 'object',
+            properties: {
+              record_flow: { type: 'string', enum: ['expense', 'income'] },
+              record_title: { type: 'string' },
+              record_amount: { type: 'number' },
+              record_category: { type: 'string', enum: allowedCategories },
+              record_description: { type: 'string' }
+            },
+            required: ['record_flow', 'record_title', 'record_amount', 'record_category', 'record_description']
+          };
+        })() }
+      }
+    });
+
+    const raw = JSON.parse(response.choices?.[0]?.message?.content || '{}');
+
+    // Reuse mapping logic from image endpoint
+    function normalize(str) { return String(str || '').toLowerCase().trim(); }
+    function jaccardSimilarity(a, b) {
+      const setA = new Set(normalize(a).split(/\s+/).filter(Boolean));
+      const setB = new Set(normalize(b).split(/\s+/).filter(Boolean));
+      if (setA.size === 0 || setB.size === 0) return 0;
+      const intersection = new Set([...setA].filter(x => setB.has(x))).size;
+      const union = new Set([...setA, ...setB]).size;
+      return intersection / union;
+    }
+    function bestCategoryMatch(input, allowed) {
+      const nInput = normalize(input);
+      if (!nInput) return null;
+      const exact = allowed.find(c => normalize(c) === nInput);
+      if (exact) return exact;
+      const starts = allowed.find(c => normalize(c).startsWith(nInput) || nInput.startsWith(normalize(c)));
+      if (starts) return starts;
+      let best = null, bestScore = 0;
+      for (const c of allowed) {
+        const s = jaccardSimilarity(c, nInput);
+        if (s > bestScore) { bestScore = s; best = c; }
+      }
+      return bestScore >= 0.4 ? best : null;
+    }
+    const mappedCategory = bestCategoryMatch(raw.record_category, allowedCategories);
+    if (mappedCategory) raw.record_category = mappedCategory; else raw.record_category = allowedCategories[0];
+
+    const parsed = TransactionAnalysisSchema.parse(raw);
+    return res.json({ success: true, data: parsed });
+  } catch (error) {
+    console.error('Analyze audio error:', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to analyze audio' });
+  }
+});
+
+// express-validator validation removed; using Zod below
+
+// Zod query parser
+const ListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  type: z.enum(['income', 'expense']).optional(),
+  category: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  search: z.string().optional()
+});
+
+const parseQuery = (schema) => (req, res, next) => {
+  const result = schema.safeParse(req.query);
+  if (!result.success) {
+    return res.status(400).json({ success: false, message: 'Validation failed', errors: result.error.issues });
+  }
+  req.query = result.data;
+  next();
+};
 
 // @route   GET /api/transactions
 // @desc    Get user's transactions with filtering and pagination
 // @access  Private
-router.get('/', authenticateToken, validateQuery, async (req, res) => {
+router.get('/', authenticateToken, parseQuery(ListQuerySchema), async (req, res) => {
   try {
     const {
       page = 1,
@@ -182,7 +412,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // @route   POST /api/transactions
 // @desc    Create new transaction
 // @access  Private
-router.post('/', authenticateToken, validateTransaction, async (req, res) => {
+router.post('/', authenticateToken, (req, res, next) => {
+  // Coerce numeric body fields before Zod
+  if (req.body && typeof req.body.amount === 'string') {
+    const n = parseFloat(req.body.amount);
+    if (!Number.isNaN(n)) req.body.amount = n;
+  }
+  next();
+}, parseBody(CreateTransactionSchema), async (req, res) => {
   try {
     const { title, amount, category, type, date, description } = req.body;
     const userId = req.userId;
@@ -190,7 +427,7 @@ router.post('/', authenticateToken, validateTransaction, async (req, res) => {
     // Verify category exists and belongs to user or is default
     const categoryDoc = await Category.findOne({
       name: category,
-      $or: [{ userId }, { isDefault: true }]
+      userId
     });
 
     if (!categoryDoc) {
@@ -256,7 +493,13 @@ router.post('/', authenticateToken, validateTransaction, async (req, res) => {
 // @route   PUT /api/transactions/:id
 // @desc    Update transaction
 // @access  Private
-router.put('/:id', authenticateToken, validateTransaction, async (req, res) => {
+router.put('/:id', authenticateToken, (req, res, next) => {
+  if (req.body && typeof req.body.amount === 'string') {
+    const n = parseFloat(req.body.amount);
+    if (!Number.isNaN(n)) req.body.amount = n;
+  }
+  next();
+}, parseBody(UpdateTransactionSchema), async (req, res) => {
   try {
     const { title, amount, category, type, date, description } = req.body;
     const userId = req.userId;
@@ -264,7 +507,7 @@ router.put('/:id', authenticateToken, validateTransaction, async (req, res) => {
     // Verify category exists and belongs to user or is default
     const categoryDoc = await Category.findOne({
       name: category,
-      $or: [{ userId }, { isDefault: true }]
+      userId
     });
 
     if (!categoryDoc) {

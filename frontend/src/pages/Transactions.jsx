@@ -126,130 +126,116 @@ const Transactions = () => {
   };
 
   return (
-    <div className="transactions-page">
-      <div className="page-header">
-        <h1>Transactions</h1>
+    <div className="h-full p-6 space-y-6 overflow-y-auto pb-20">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Transactions</h1>
         <button 
-          className="refresh-button"
+          className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={loadTransactions}
           disabled={loading}
         >
-          <RefreshCw size={20} className={loading ? 'spinning' : ''} />
+          <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="summary-cards">
-        <div className="summary-card income">
-          <div className="summary-icon">
-            <TrendingUp size={24} />
-          </div>
-          <div className="summary-content">
-            <div className="summary-label">Total Income</div>
-            <div className="summary-value">{formatAmount(summary.totalIncome)}</div>
-          </div>
-        </div>
-        
-        <div className="summary-card expense">
-          <div className="summary-icon">
-            <TrendingDown size={24} />
-          </div>
-          <div className="summary-content">
-            <div className="summary-label">Total Expense</div>
-            <div className="summary-value">{formatAmount(summary.totalExpense)}</div>
-          </div>
-        </div>
-        
-        <div className="summary-card balance">
-          <div className="summary-icon">
-            <TrendingUp size={24} />
-          </div>
-          <div className="summary-content">
-            <div className="summary-label">Balance</div>
-            <div className={`summary-value ${summary.balance >= 0 ? 'positive' : 'negative'}`}>
-              {formatAmount(summary.balance)}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Summary Cards hidden as requested */}
 
       {/* Filters */}
-      <div className="filters-section">
-        <div className="search-bar">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Search transactions..."
-            value={filters.search}
-            onChange={handleSearch}
-            className="search-input"
-          />
-        </div>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="space-y-4">
+          <div className="relative">
+            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              value={filters.search}
+              onChange={handleSearch}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
 
-        <div className="filter-buttons">
-          <button
-            className={`filter-button ${filters.type === '' ? 'active' : ''}`}
-            onClick={() => handleFilterChange('type', '')}
-          >
-            All
-          </button>
-          <button
-            className={`filter-button ${filters.type === 'income' ? 'active' : ''}`}
-            onClick={() => handleFilterChange('type', 'income')}
-          >
-            Income
-          </button>
-          <button
-            className={`filter-button ${filters.type === 'expense' ? 'active' : ''}`}
-            onClick={() => handleFilterChange('type', 'expense')}
-          >
-            Expense
-          </button>
-        </div>
-
-        <div className="date-filters">
-          <input
-            type="date"
-            value={filters.startDate}
-            onChange={(e) => handleFilterChange('startDate', e.target.value)}
-            className="date-input"
-            placeholder="Start date"
-          />
-          <input
-            type="date"
-            value={filters.endDate}
-            onChange={(e) => handleFilterChange('endDate', e.target.value)}
-            className="date-input"
-            placeholder="End date"
-          />
-          {(filters.startDate || filters.endDate) && (
-            <button className="clear-filters" onClick={clearFilters}>
-              Clear
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+            <button
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filters.type === '' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleFilterChange('type', '')}
+            >
+              All
             </button>
-          )}
+            <button
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filters.type === 'income' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleFilterChange('type', 'income')}
+            >
+              Income
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filters.type === 'expense' 
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleFilterChange('type', 'expense')}
+            >
+              Expense
+            </button>
+            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 sm:mx-2"></div>
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">Start date</label>
+              <input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">End date</label>
+              <input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            {(filters.startDate || filters.endDate) && (
+              <button 
+                className="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
+                onClick={clearFilters}
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Transactions List */}
-      <div className="transactions-list">
+      <div className="space-y-4">
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner-large"></div>
-            <p>Loading transactions...</p>
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading transactions...</p>
           </div>
         ) : transactions.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">
-              <TrendingUp size={48} />
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <TrendingUp size={32} className="text-gray-400 dark:text-gray-500" />
             </div>
-            <h3>No transactions found</h3>
-            <p>Start by adding your first transaction</p>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No transactions found</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Start by adding your first transaction</p>
             <button 
-              className="add-first-button"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               onClick={() => setShowForm(true)}
             >
               <Plus size={20} />
-              Add Transaction
+              <span>Add Transaction</span>
             </button>
           </div>
         ) : (

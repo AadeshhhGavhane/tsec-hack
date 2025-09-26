@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config');
-const { validateRegister, validateLogin } = require('../middleware/validation');
+const { parseBody, RegisterSchema, LoginSchema } = require('../middleware/validation');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -17,7 +17,7 @@ const generateToken = (userId) => {
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', validateRegister, async (req, res) => {
+router.post('/register', parseBody(RegisterSchema), async (req, res) => {
   try {
     const { email, password, name } = req.body;
 
@@ -37,6 +37,22 @@ router.post('/register', validateRegister, async (req, res) => {
       name
     });
     await user.save();
+
+    // Seed user-specific default categories
+    try {
+      const defaults = await require('../models/Category').getDefaultCategories();
+      const userDefaults = defaults.map(c => ({
+        name: c.name,
+        color: c.color,
+        icon: c.icon,
+        type: c.type,
+        userId: user._id,
+        isDefault: false
+      }));
+      await require('../models/Category').insertMany(userDefaults, { ordered: false });
+    } catch (e) {
+      console.warn('Seeding user categories warning:', e.message);
+    }
 
     // Generate token
     const token = generateToken(user._id);
@@ -61,7 +77,7 @@ router.post('/register', validateRegister, async (req, res) => {
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
-router.post('/login', validateLogin, async (req, res) => {
+router.post('/login', parseBody(LoginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);

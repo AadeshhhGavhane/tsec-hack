@@ -41,14 +41,10 @@ const categorySchema = new mongoose.Schema({
 // Index for better query performance
 categorySchema.index({ userId: 1, isDefault: 1 });
 
-// Ensure default categories are unique
-categorySchema.index({ name: 1, isDefault: 1 }, { 
-  unique: true, 
-  partialFilterExpression: { isDefault: true } 
-});
+// Remove uniqueness across global defaults; we will clone defaults per user
 
-// Ensure user categories are unique per user
-categorySchema.index({ name: 1, userId: 1 }, { 
+// Ensure user categories are unique per user AND type
+categorySchema.index({ name: 1, userId: 1, type: 1 }, { 
   unique: true, 
   partialFilterExpression: { isDefault: false } 
 });

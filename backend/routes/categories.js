@@ -1,28 +1,14 @@
 const express = require('express');
-const { body, param } = require('express-validator');
+// express-validator removed (migrated to Zod)
 const Category = require('../models/Category');
 const Transaction = require('../models/Transaction');
 const { authenticateToken } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+const { parseBody, CreateCategorySchema, UpdateCategorySchema } = require('../middleware/validation');
 
 const router = express.Router();
+// Removed restore-defaults; categories are per-user and deletable
 
-// Validation middleware for categories
-const validateCategory = [
-  body('name')
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Category name must be between 2 and 50 characters'),
-  body('color')
-    .optional()
-    .matches(/^#[0-9A-Fa-f]{6}$/)
-    .withMessage('Color must be a valid hex color'),
-  body('icon')
-    .optional()
-    .isLength({ max: 20 })
-    .withMessage('Icon name cannot exceed 20 characters'),
-  handleValidationErrors
-];
+// Removed legacy validateCategory; using Zod parseBody
 
 // @route   GET /api/categories
 // @desc    Get user's categories (default + custom)
@@ -30,7 +16,7 @@ const validateCategory = [
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.userId;
-    const { type } = req.query;
+    const { type, search } = req.query;
 
     // Build filter for categories
     let filter = {
@@ -42,15 +28,20 @@ router.get('/', authenticateToken, async (req, res) => {
       filter.type = type;
     }
 
-    // Get default categories and user's custom categories
-    const categories = await Category.find(filter).sort({ isDefault: -1, name: 1 });
+    // Name search if provided
+    if (search && search.trim()) {
+      filter.name = { $regex: search.trim(), $options: 'i' };
+    }
+
+    // Only user's own categories
+    const categories = await Category.find({ userId, ...(filter.type && { type: filter.type }), ...(filter.name && { name: filter.name }) }).sort({ name: 1 });
 
     // Get transaction counts for each category
     const categoryStats = await Transaction.aggregate([
       { $match: { userId } },
       {
         $group: {
-          _id: '$category',
+          _id: '$category', // category name string
           count: { $sum: 1 },
           totalAmount: { $sum: '$amount' }
         }
@@ -59,9 +50,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
     // Add stats to categories
     const categoriesWithStats = categories.map(category => {
-      const stats = categoryStats.find(stat => 
-        stat._id.toString() === category._id.toString()
-      );
+      const stats = categoryStats.find(stat => stat._id && stat._id.toString().toLowerCase() === category.name.toLowerCase());
       
       return {
         ...category.toObject(),
@@ -129,15 +118,16 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // @route   POST /api/categories
 // @desc    Create custom category
 // @access  Private
-router.post('/', authenticateToken, validateCategory, async (req, res) => {
+router.post('/', authenticateToken, parseBody(CreateCategorySchema), async (req, res) => {
   try {
     const { name, color = '#3b82f6', icon = 'tag', type = 'expense' } = req.body;
     const userId = req.userId;
 
-    // Check if category name already exists for this user
+    // Check if category name already exists for this user with same type (allow same name for different type)
     const existingCategory = await Category.findOne({
       name: { $regex: new RegExp(`^${name}$`, 'i') },
-      userId
+      userId,
+      type
     });
 
     if (existingCategory) {
@@ -175,7 +165,7 @@ router.post('/', authenticateToken, validateCategory, async (req, res) => {
 // @route   PUT /api/categories/:id
 // @desc    Update custom category
 // @access  Private
-router.put('/:id', authenticateToken, validateCategory, async (req, res) => {
+router.put('/:id', authenticateToken, parseBody(UpdateCategorySchema), async (req, res) => {
   try {
     const { name, color, icon, type } = req.body;
     const userId = req.userId;
@@ -199,6 +189,7 @@ router.put('/:id', authenticateToken, validateCategory, async (req, res) => {
       const existingCategory = await Category.findOne({
         name: { $regex: new RegExp(`^${name}$`, 'i') },
         userId,
+        type: type || category.type,
         _id: { $ne: category._id }
       });
 
@@ -243,24 +234,15 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const userId = req.userId;
 
-    // Find category (must be user's custom category, not default)
-    const category = await Category.findOne({
-      _id: req.params.id,
-      userId,
-      isDefault: false
-    });
-
-    if (!category) {
-      return res.status(404).json({
-        success: false,
-        message: 'Category not found or cannot be deleted'
-      });
+    const cat = await Category.findOne({ _id: req.params.id, userId });
+    if (!cat) {
+      return res.status(404).json({ success: false, message: 'Category not found' });
     }
 
     // Check if category has transactions
     const transactionCount = await Transaction.countDocuments({
       userId,
-      category: category._id
+      category: cat._id
     });
 
     if (transactionCount > 0) {

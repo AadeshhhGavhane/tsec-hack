@@ -109,12 +109,32 @@ export const transactionAPI = {
     const response = await api.delete(`/transactions/${id}`);
     return response.data;
   },
+
+  analyzeImage: async (file) => {
+    const form = new FormData();
+    form.append('image', file);
+    const response = await api.post('/transactions/analyze-image', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  analyzeAudio: async (fileOrBlob) => {
+    const form = new FormData();
+    form.append('audio', fileOrBlob, 'recording.webm');
+    const response = await api.post('/transactions/analyze-audio', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  }
 };
 
 // Category API functions
 export const categoryAPI = {
-  getCategories: async (type = null) => {
-    const params = type ? { type } : {};
+  getCategories: async (type = null, search = null) => {
+    const params = {};
+    if (type) params.type = type;
+    if (search) params.search = search;
     const response = await api.get('/categories', { params });
     return response.data;
   },
@@ -136,6 +156,11 @@ export const categoryAPI = {
 
   deleteCategory: async (id) => {
     const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
+
+  restoreDefaults: async () => {
+    const response = await api.post('/categories/restore-defaults');
     return response.data;
   },
 };

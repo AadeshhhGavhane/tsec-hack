@@ -92,6 +92,20 @@ const startServer = async () => {
     // Connect to MongoDB
     await connectDB();
     
+    // Ensure Category indexes are up to date (drop legacy unique on name+userId)
+    try {
+      const indexes = await Category.collection.indexes();
+      const legacy = indexes.find(i => i.name === 'name_1_userId_1');
+      if (legacy) {
+        console.log('⚙️  Dropping legacy Category index name_1_userId_1');
+        await Category.collection.dropIndex('name_1_userId_1');
+      }
+      await Category.syncIndexes();
+      console.log('✅ Category indexes synchronized');
+    } catch (e) {
+      console.warn('Index sync warning:', e.message);
+    }
+
     // Seed default categories
     await Category.seedDefaultCategories();
     

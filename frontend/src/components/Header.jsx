@@ -1,90 +1,47 @@
-import { useState } from 'react';
-import { Menu, Bell, User, Search } from 'lucide-react';
+import { Menu, Bell, Search } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 const Header = ({ onMenuClick }) => {
-  const { user, logout } = useAuth();
-  const [showUserMenu, setShowUserMenu] = useState(false);
-
-  const handleLogout = async () => {
-    await logout();
-  };
+  const { user } = useAuth();
+  const location = useLocation();
+  const hideGlobalSearch = location.pathname.startsWith('/dashboard/categories');
 
   return (
-    <header className="header">
-      <div className="header-left">
-        <button 
-          className="menu-button"
-          onClick={onMenuClick}
-          aria-label="Open menu"
-        >
-          <Menu size={24} />
-        </button>
-        
-        <div className="search-container">
-          <Search size={20} className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="search-input"
-          />
-        </div>
-      </div>
-
-      <div className="header-right">
-        <button className="notification-button" aria-label="Notifications">
-          <Bell size={20} />
-          <span className="notification-badge">3</span>
-        </button>
-
-        <div className="user-menu">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 lg:px-6 py-4 sticky top-0 z-30 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <button 
-            className="user-button"
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            aria-label="User menu"
+            className="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors"
+            onClick={onMenuClick}
+            aria-label="Open menu"
           >
-            <div className="user-avatar">
-              <User size={20} />
-            </div>
-            <span className="user-name">{user?.name}</span>
+            <Menu size={24} />
           </button>
-
-          {showUserMenu && (
-            <div className="user-dropdown">
-              <div className="user-info">
-                <div className="user-avatar-large">
-                  <User size={24} />
-                </div>
-                <div className="user-details">
-                  <div className="user-name-large">{user?.name}</div>
-                  <div className="user-email">{user?.email}</div>
-                </div>
-              </div>
-              
-              <div className="dropdown-divider"></div>
-              
-              <button className="dropdown-item">
-                <User size={16} />
-                Profile
-              </button>
-              <button className="dropdown-item">
-                <Bell size={16} />
-                Notifications
-              </button>
-              <button className="dropdown-item">
-                Settings
-              </button>
-              
-              <div className="dropdown-divider"></div>
-              
-              <button 
-                className="dropdown-item logout"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
+          
+          {!hideGlobalSearch && (
+          <div className="relative hidden sm:block">
+            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="pl-10 pr-4 py-2 w-48 sm:w-64 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white dark:placeholder-gray-400"
+            />
+          </div>
           )}
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
+          
+          <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors" aria-label="Notifications">
+            <Bell size={20} />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+          </button>
+          <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 select-none">
+            {user?.name}
+          </span>
         </div>
       </div>
     </header>
