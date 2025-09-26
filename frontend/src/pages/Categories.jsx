@@ -110,17 +110,17 @@ const Categories = () => {
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full">
             <input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="Add category"
-              className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
             <select
               value={form.type}
               onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-              className="px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white shrink-0 w-[120px]"
             >
               <option value="income">Income</option>
               <option value="expense">Expense</option>
@@ -129,7 +129,7 @@ const Categories = () => {
               type="button"
               disabled={submitting}
               onClick={handleSubmit}
-              className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+              className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 shrink-0"
               title={editingId ? 'Update' : 'Add'}
             >
               {editingId ? <Edit3 size={14} /> : <Plus size={14} />}

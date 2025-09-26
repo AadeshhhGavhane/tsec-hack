@@ -1,16 +1,35 @@
 import { useEffect, useState } from 'react';
-import { Send, X, Mic, ImageIcon } from 'lucide-react';
-import { chatAPI, transactionAPI } from '../services/api';
+import { Send, X, Mic, ImageIcon, FileText } from 'lucide-react';
+import { chatAPI, transactionAPI, bankStatementAPI } from '../services/api';
 
 const Chatbot = ({ open = false, onClose = () => {} }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([{ 
     role: 'assistant', 
-    content: 'Hi! I can add transactions or show your recent ones. Try "add lunch 250" or "show groceries this week".' 
+    content: 'Hi! I can add transactions, show your recent ones, or chat with your bank statements. Try "add lunch 250", "show groceries this week", or ask about your bank statements.' 
   }]);
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [availableFiles, setAvailableFiles] = useState([]);
+  const [selectedFileId, setSelectedFileId] = useState(null);
+
+  const loadAvailableFiles = async () => {
+    try {
+      const res = await bankStatementAPI.listFiles();
+      if (res.success) {
+        setAvailableFiles(res.data.files || []);
+      }
+    } catch (error) {
+      console.error('Error loading files:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      loadAvailableFiles();
+    }
+  }, [open]);
 
   const send = async () => {
     if (!input.trim()) return;
@@ -18,12 +37,29 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
     setMessages(m => [...m, msg]);
     setInput('');
     setLoading(true);
+    
     try {
-      const res = await chatAPI.chatWithTools([...messages, msg].map(m => ({ role: m.role, content: m.content })));
+      let res;
+      
+      // Check if user wants to chat with bank statements
+      if (selectedFileId || input.toLowerCase().includes('bank statement') || input.toLowerCase().includes('statement')) {
+        if (selectedFileId) {
+          res = await bankStatementAPI.chatWithFile(selectedFileId, [...messages, msg].map(m => ({ role: m.role, content: m.content })));
+        } else if (availableFiles.length > 0) {
+          // Use the first available file if no specific file is selected
+          res = await bankStatementAPI.chatWithFile(availableFiles[0].id, [...messages, msg].map(m => ({ role: m.role, content: m.content })));
+        } else {
+          res = { success: false, message: 'No bank statements available' };
+        }
+      } else {
+        // Use regular chat
+        res = await chatAPI.chatWithTools([...messages, msg].map(m => ({ role: m.role, content: m.content })));
+      }
+      
       if (res.success) {
         setMessages(m => [...m, { role: 'assistant', content: res.data.reply }]);
       } else {
-        setMessages(m => [...m, { role: 'assistant', content: 'Sorry, I could not complete that.' }]);
+        setMessages(m => [...m, { role: 'assistant', content: res.message || 'Sorry, I could not complete that.' }]);
       }
     } catch (e) {
       setMessages(m => [...m, { role: 'assistant', content: 'Error contacting assistant.' }]);
@@ -109,9 +145,9 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
   return (
     <>
       {open && (
-        <div className="fixed right-0 top-16 bottom-0 z-50 w-80 sm:w-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-2xl">
+        <div className="fixed inset-0 sm:right-0 sm:top-16 sm:bottom-0 sm:w-80 sm:w-96 sm:inset-auto z-50 bg-white dark:bg-gray-800 sm:border-l border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
             <div className="font-semibold text-gray-900 dark:text-white">Assistant</div>
             <button 
               onClick={onClose} 
@@ -121,8 +157,29 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
             </button>
           </div>
           
+          {/* File Selector */}
+          {availableFiles.length > 0 && (
+            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText size={16} className="text-gray-500 dark:text-gray-400" />
+                <select
+                  value={selectedFileId || ''}
+                  onChange={(e) => setSelectedFileId(e.target.value || null)}
+                  className="text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-gray-900 dark:text-white"
+                >
+                  <option value="">Chat with transactions</option>
+                  {availableFiles.map(file => (
+                    <option key={file.id} value={file.id}>
+                      {file.metadata?.original_name || `Statement ${file.id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+          
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ height: 'calc(100vh - 180px)' }}>
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
             {messages.map((m, i) => (
               <div 
                 key={i} 
@@ -141,7 +198,7 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
           </div>
           
           {/* Input Area - Fixed at bottom */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800 flex-shrink-0">
             <div className="flex items-center gap-2">
               <button 
                 className={`p-2 rounded-lg transition-colors ${

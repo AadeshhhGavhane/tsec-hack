@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Prefer explicit env, otherwise infer from current host (works on LAN/mobile)
+const inferredHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const isHttps = typeof window !== 'undefined' ? window.location.protocol === 'https:' : false;
+const API_BASE_URL = (import.meta?.env?.VITE_API_BASE_URL) || `${isHttps ? 'https' : 'http'}://${inferredHost}:5000/api`;
 
 // Create axios instance
 const api = axios.create({
@@ -251,6 +254,33 @@ export const passkeysAPI = {
 export const chatAPI = {
   chatWithTools: async (messages) => {
     const response = await api.post('/chat/tool', { messages });
+    return response.data;
+  }
+};
+
+// Bank Statement API functions
+export const bankStatementAPI = {
+  uploadFile: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/bank-statements/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  listFiles: async () => {
+    const response = await api.get('/bank-statements/files');
+    return response.data;
+  },
+
+  deleteFile: async (fileId) => {
+    const response = await api.delete(`/bank-statements/files/${fileId}`);
+    return response.data;
+  },
+
+  chatWithFile: async (fileId, messages) => {
+    const response = await api.post(`/bank-statements/chat/${fileId}`, { messages });
     return response.data;
   }
 };

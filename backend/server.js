@@ -16,28 +16,14 @@ const insightsRoutes = require('./routes/insights');
 const alertsRoutes = require('./routes/alerts');
 const passkeyRoutes = require('./routes/passkeys');
 const chatRoutes = require('./routes/chat');
+const bankStatementRoutes = require('./routes/bankStatements');
 
 const app = express();
 
 // Middleware
-// More permissive CORS for hackathon/dev: reflect requesting origin (only over http(s))
-const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173').split(',').map(s=>s.trim());
+// Open CORS for dev/mobile testing: allow all origins with credentials
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // mobile apps/curl
-    try {
-      const url = new URL(origin);
-      const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-      if (process.env.NODE_ENV !== 'production') return callback(null, true);
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes(`${url.protocol}//${url.hostname}:${url.port}`)) {
-        return callback(null, true);
-      }
-      if (isLocal) return callback(null, true);
-      return callback(new Error('CORS blocked'));
-    } catch {
-      return callback(new Error('CORS origin invalid'));
-    }
-  },
+  origin: true,
   credentials: true
 }));
 
@@ -71,6 +57,7 @@ app.use('/api/insights', insightsRoutes);
 app.use('/api/alerts', alertsRoutes);
 app.use('/api/passkeys', passkeyRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/bank-statements', bankStatementRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -89,6 +76,7 @@ app.get('/', (req, res) => {
       alerts: '/api/alerts',
       passkeys: '/api/passkeys',
       chat: '/api/chat',
+      bankStatements: '/api/bank-statements',
       health: '/health'
     }
   });
