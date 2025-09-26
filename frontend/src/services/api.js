@@ -189,4 +189,43 @@ export const learnAPI = {
   }
 };
 
+// Budget API functions
+export const budgetAPI = {
+  generate: async (payload) => {
+    const response = await api.post('/budget/generate', payload);
+    return response.data;
+  },
+  save: async (payload) => {
+    const response = await api.post('/budget/save', payload);
+    return response.data;
+  },
+  current: async (month) => {
+    const response = await api.get('/budget/current', { params: { month } });
+    return response.data;
+  },
+  history: async () => {
+    const response = await api.get('/budget/history');
+    return response.data;
+  },
+  recommend: async (payload) => {
+    const response = await api.post('/budget/recommend', payload);
+    return response.data;
+  }
+};
+
+// Insights & Alerts API functions
+export const insightsAPI = {
+  getSpending: async (months = 6) => {
+    const response = await api.get('/insights/spending', { params: { months } });
+    return response.data;
+  }
+};
+
+export const alertsAPI = {
+  getAlerts: async (month) => {
+    const response = await api.get('/alerts', { params: { month } });
+    return response.data;
+  }
+};
+
 export default api;

@@ -11,6 +11,9 @@ const protectedRoutes = require('./routes/protected');
 const transactionRoutes = require('./routes/transactions');
 const categoryRoutes = require('./routes/categories');
 const learnRoutes = require('./routes/learn');
+const budgetRoutes = require('./routes/budget');
+const insightsRoutes = require('./routes/insights');
+const alertsRoutes = require('./routes/alerts');
 
 const app = express();
 
@@ -45,6 +48,9 @@ app.use('/api/protected', protectedRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/learn', learnRoutes);
+app.use('/api/budget', budgetRoutes);
+app.use('/api/insights', insightsRoutes);
+app.use('/api/alerts', alertsRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -58,6 +64,9 @@ app.get('/', (req, res) => {
       transactions: '/api/transactions',
       categories: '/api/categories',
       learn: '/api/learn',
+      budget: '/api/budget',
+      insights: '/api/insights',
+      alerts: '/api/alerts',
       health: '/health'
     }
   });

@@ -11,6 +11,8 @@ import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
 import Learn from './pages/Learn';
 import LearnHistory from './pages/LearnHistory';
+import Budget from './pages/Budget';
+import Insights from './pages/Insights';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
               <Route path="dashboard/categories" element={<Categories />} />
               <Route path="dashboard/learn" element={<Learn />} />
               <Route path="dashboard/learn/history" element={<LearnHistory />} />
+              <Route path="dashboard/budget" element={<Budget />} />
+              <Route path="dashboard/insights" element={<Insights />} />
               <Route path="dashboard/analytics" element={<div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4"><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1><p className="text-gray-600 dark:text-gray-400">Analytics page coming soon...</p></div>} />
               <Route path="dashboard/reports" element={<div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4"><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reports</h1><p className="text-gray-600 dark:text-gray-400">Reports page coming soon...</p></div>} />
               <Route path="dashboard/users" element={<div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4"><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Users</h1><p className="text-gray-600 dark:text-gray-400">Users page coming soon...</p></div>} />
