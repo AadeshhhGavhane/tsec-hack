@@ -1,7 +1,7 @@
 {
-  "name": "tsec-hack-backend",
+  "name": "finai-backend",
   "version": "1.0.0",
-  "description": "Basic authentication backend with Express",
+  "description": "FinAI - AI-Powered Financial Management Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -145,13 +145,13 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 sm:right-0 sm:top-16 sm:bottom-0 sm:w-80 sm:w-96 sm:inset-auto z-50 bg-white dark:bg-gray-800 sm:border-l border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col">
+        <div className="fixed inset-0 sm:right-0 sm:top-16 sm:bottom-0 sm:w-80 sm:w-96 sm:inset-auto z-50 bg-white dark:bg-white brutal-border brutal-shadow flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
-            <div className="font-semibold text-gray-900 dark:text-white">Assistant</div>
+          <div className="flex items-center justify-between px-4 py-3 brutal-border-b-3 bg-white dark:bg-white flex-shrink-0">
+            <div className="font-black text-black text-lg uppercase tracking-wide">Assistant</div>
             <button 
               onClick={onClose} 
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              className="p-2 brutal-button brutal-shadow-hover animate-brutal-bounce"
             >
               <X size={18} />
             </button>
@@ -159,13 +159,13 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
           
           {/* File Selector */}
           {availableFiles.length > 0 && (
-            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex-shrink-0">
+            <div className="px-4 py-3 brutal-border-b-3 bg-orange-100 dark:bg-orange-200 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <FileText size={16} className="text-gray-500 dark:text-gray-400" />
+                <FileText size={16} className="text-black font-bold" />
                 <select
                   value={selectedFileId || ''}
                   onChange={(e) => setSelectedFileId(e.target.value || null)}
-                  className="text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-gray-900 dark:text-white"
+                  className="text-xs bg-white brutal-input font-bold uppercase tracking-wide px-2 py-2 flex-1"
                 >
                   <option value="">Chat with transactions</option>
                   {availableFiles.map(file => (
@@ -179,42 +179,42 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
           )}
           
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {messages.map((m, i) => (
               <div 
                 key={i} 
-                className={`px-3 py-2 rounded-lg text-sm max-w-xs ${
+                className={`px-3 py-2 text-xs max-w-[85%] font-bold brutal-border ${
                   m.role === 'user'
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 ml-auto'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                    ? 'bg-orange-500 text-black ml-auto brutal-shadow'
+                    : 'bg-white text-black brutal-shadow'
                 }`}
               >
                 {m.content}
               </div>
             ))}
             {loading && (
-              <div className="text-sm text-gray-500 px-3">Thinking…</div>
+              <div className="text-xs text-black font-black px-3 py-2 bg-orange-100 dark:bg-orange-200 brutal-border brutal-shadow animate-brutal-pulse">Thinking…</div>
             )}
           </div>
           
           {/* Input Area - Fixed at bottom */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800 flex-shrink-0">
+          <div className="brutal-border-t-3 p-4 bg-white dark:bg-white flex-shrink-0">
             <div className="flex items-center gap-2">
               <button 
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-2 brutal-button brutal-shadow-hover animate-brutal-bounce ${
                   recording 
-                    ? 'bg-red-500 text-white' 
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'bg-red-500 text-black' 
+                    : 'bg-orange-500 text-black'
                 }`}
                 onClick={toggleRecord}
                 title={recording ? 'Stop recording' : 'Start voice recording'}
               >
-                <Mic size={18} />
+                <Mic size={16} />
               </button>
               
-              <label className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer transition-colors"
+              <label className="p-2 brutal-button brutal-shadow-hover animate-brutal-bounce cursor-pointer"
                 title="Upload image">
-                <ImageIcon size={18} />
+                <ImageIcon size={16} />
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -231,18 +231,18 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
                 value={input} 
                 onChange={e => setInput(e.target.value)} 
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} 
-                placeholder="Type a message…" 
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="TYPE A MESSAGE..." 
+                className="flex-1 px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-xs"
                 disabled={loading}
               />
               
               <button 
                 onClick={send} 
                 disabled={loading || !input.trim()} 
-                className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white transition-colors"
+                className="px-3 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce disabled:bg-gray-400 disabled:cursor-not-allowed"
                 title="Send message"
               >
-                <Send size={18} />
+                <Send size={16} />
               </button>
             </div>
           </div>

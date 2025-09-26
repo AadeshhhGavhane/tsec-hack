@@ -71,22 +71,22 @@ const Profile = () => {
   };
 
   return (
-    <div className="h-full p-6 space-y-6 overflow-y-auto">
+    <div className="h-full p-4 space-y-6 overflow-y-auto bg-gray-100 dark:bg-gray-100">
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Profile Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage your account information and preferences</p>
+        <h1 className="text-3xl sm:text-4xl font-black text-black mb-3 uppercase tracking-wider">Profile Settings</h1>
+        <p className="text-black font-bold text-base">Manage your account information and preferences</p>
       </div>
 
       <div className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-6 pb-6 mb-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center">
-              <User size={32} />
+        <div className="brutal-card p-4">
+          <div className="flex items-center gap-4 pb-4 mb-4 brutal-border-b-3">
+            <div className="w-16 h-16 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center">
+              <User size={32} className="text-black font-bold" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{user?.name}</h2>
-              <p className="text-gray-600 dark:text-gray-400">{user?.email}</p>
-              <div className="flex items-center gap-3 mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <h2 className="text-lg font-black text-black uppercase tracking-wide">{user?.name}</h2>
+              <p className="text-black font-bold text-sm">{user?.email}</p>
+              <div className="flex items-center gap-2 mt-2 text-xs text-black font-bold">
                 <Calendar size={16} />
                 <span>Member since {new Date(user?.createdAt).toLocaleDateString()}</span>
               </div>
@@ -94,11 +94,11 @@ const Profile = () => {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Account Information</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <h3 className="text-lg font-black text-black uppercase tracking-wide">Account Information</h3>
               {!isEditing && (
                 <button 
-                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm inline-flex items-center gap-2"
+                  className="px-4 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce inline-flex items-center gap-2 text-sm"
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit3 size={16} />
@@ -108,14 +108,14 @@ const Profile = () => {
             </div>
 
             {message && (
-              <div className={`px-4 py-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'}`}>
+              <div className={`px-4 py-3 brutal-card text-sm font-bold ${message.includes('success') ? 'bg-green-50 dark:bg-green-100 text-black' : 'bg-red-50 dark:bg-red-100 text-black'}`}>
                 {message}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <div className="flex flex-col gap-2">
-                <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300 inline-flex items-center gap-2">
+                <label htmlFor="name" className="text-sm font-black text-black uppercase tracking-wide inline-flex items-center gap-2">
                   <User size={16} />
                   Full Name
                 </label>
@@ -125,14 +125,14 @@ const Profile = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 brutal-input font-bold focus-ring text-sm"
                   disabled={!isEditing}
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 inline-flex items-center gap-2">
+                <label htmlFor="email" className="text-sm font-black text-black uppercase tracking-wide inline-flex items-center gap-2">
                   <Mail size={16} />
                   Email Address
                 </label>
@@ -142,17 +142,17 @@ const Profile = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 brutal-input font-bold focus-ring text-sm"
                   disabled={!isEditing}
                   required
                 />
               </div>
 
               {isEditing && (
-                <div className="flex items-center justify-end gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3">
                   <button
                     type="button"
-                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-white text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce disabled:opacity-50 text-sm w-full sm:w-auto"
                     onClick={handleCancel}
                     disabled={loading}
                   >
@@ -160,11 +160,11 @@ const Profile = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg inline-flex items-center gap-2 disabled:opacity-50"
+                    className="px-4 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce inline-flex items-center gap-2 disabled:opacity-50 text-sm w-full sm:w-auto"
                     disabled={loading}
                   >
                     {loading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 bg-orange-500 brutal-border brutal-shadow animate-brutal-pulse"></div>
                     ) : (
                       <>
                         <Save size={16} />
@@ -179,25 +179,25 @@ const Profile = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-600 dark:text-gray-400">Account Status</div>
-            <div className="mt-1 font-semibold text-green-600 dark:text-green-400">Active</div>
+          <div className="brutal-card p-4 bg-green-50 dark:bg-green-100">
+            <div className="text-sm font-black text-black uppercase tracking-wide">Account Status</div>
+            <div className="mt-1 text-lg font-black text-green-600">Active</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-600 dark:text-gray-400">Last Login</div>
-            <div className="mt-1 font-semibold text-gray-900 dark:text-white">Just now</div>
+          <div className="brutal-card p-4 bg-orange-50 dark:bg-orange-100">
+            <div className="text-sm font-black text-black uppercase tracking-wide">Last Login</div>
+            <div className="mt-1 text-lg font-black text-black">Just now</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-600 dark:text-gray-400">Account Type</div>
-            <div className="mt-1 font-semibold text-gray-900 dark:text-white">Standard</div>
+          <div className="brutal-card p-4 bg-orange-50 dark:bg-orange-100">
+            <div className="text-sm font-black text-black uppercase tracking-wide">Account Type</div>
+            <div className="mt-1 text-lg font-black text-black">Standard</div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-3">
+        <div className="brutal-card p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div className="inline-flex items-center gap-2">
-              <KeySquare size={18} className="text-gray-700 dark:text-gray-300" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Security: Passkeys</h3>
+              <KeySquare size={20} className="text-black font-bold" />
+              <h3 className="text-lg font-black text-black uppercase tracking-wide">Security: Passkeys</h3>
             </div>
             <button onClick={async ()=>{
               try {
@@ -215,10 +215,10 @@ const Profile = () => {
                 const finish = await passkeysAPI.finishRegister({ id: cred.id, rawId: cred.id, type: cred.type, response: { attestationObject: attObj, clientDataJSON } });
                 if (!finish.success) setPasskeyMsg(finish.message||'Failed to add passkey'); else setPasskeyMsg('Passkey added');
               } catch (e) { setPasskeyMsg('Passkey not supported or cancelled'); }
-            }} className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"><Plus size={14} /> Add Passkey</button>
+            }} className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm"><Plus size={16} /> Add Passkey</button>
           </div>
-          {passkeyMsg && <div className="text-sm text-gray-700 dark:text-gray-300">{passkeyMsg}</div>}
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Add a passkey to sign in with Face/Touch ID or Windows Hello.</p>
+          {passkeyMsg && <div className="text-sm font-bold text-black mb-3">{passkeyMsg}</div>}
+          <p className="text-sm font-bold text-black">Add a passkey to sign in with Face/Touch ID or Windows Hello.</p>
         </div>
       </div>
     </div>

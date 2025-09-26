@@ -1,6 +1,6 @@
-# TSEC Hack Backend - Authentication API
+# FinAI Backend - AI-Powered Financial Management API
 
-A basic authentication backend built with Express.js, featuring JWT-based authentication, password hashing with bcrypt, and input validation.
+A comprehensive financial management backend built with Express.js, featuring AI-powered transaction analysis, JWT-based authentication, and advanced financial features.
 
 ## Features
 

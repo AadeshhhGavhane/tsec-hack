@@ -29,6 +29,9 @@ const Sidebar = ({ isOpen, onClose }) => {
   ];
 
   const isActive = (path) => {
+    if (path === '/dashboard' && location.pathname === '/') {
+      return false; // Welcome page is not the same as dashboard
+    }
     return location.pathname === path;
   };
 
@@ -45,21 +48,21 @@ const Sidebar = ({ isOpen, onClose }) => {
       
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-gray-800 
-        border-r border-gray-200 dark:border-gray-700 shadow-lg
+        fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-white
+        brutal-border brutal-shadow
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:relative lg:translate-x-0 lg:shadow-none
       `}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 brutal-border-b-3">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <LayoutDashboard size={20} className="text-white" />
+            <div className="w-10 h-10 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center">
+              <LayoutDashboard size={24} className="text-black font-bold" />
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">TSEC Hack</span>
+                <span className="text-xl font-black text-black uppercase tracking-wider">FinAI</span>
           </div>
           <button 
-            className="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-3 brutal-button brutal-shadow-hover animate-brutal-bounce"
             onClick={onClose}
             aria-label="Close sidebar"
           >
@@ -76,15 +79,15 @@ const Sidebar = ({ isOpen, onClose }) => {
                   <Link
                     to={item.path}
                     className={`
-                      flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                      flex items-center space-x-3 px-4 py-3 text-sm font-bold transition-all duration-200 uppercase tracking-wide
                       ${isActive(item.path) 
-                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border-r-2 border-blue-500' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
+                        ? 'brutal-button brutal-shadow-hover bg-orange-500 text-black' 
+                        : 'text-black hover:bg-orange-100 dark:hover:bg-orange-200 brutal-shadow-hover'
                       }
                     `}
                     onClick={onClose}
                   >
-                    <Icon size={20} />
+                    <Icon size={20} className="font-bold" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -93,13 +96,13 @@ const Sidebar = ({ isOpen, onClose }) => {
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 brutal-border-t-3">
           <button 
-            className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+            className="w-full flex items-center space-x-3 px-4 py-3 bg-red-500 text-black font-bold uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-pulse" 
             onClick={handleLogout}
           >
             <LogOut size={20} />
-            <span className="font-medium">Logout</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>

@@ -158,81 +158,85 @@ const TransactionForm = ({
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+      <div className="bg-white dark:bg-white brutal-card w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 brutal-border-b-3">
+          <h2 className="text-lg font-black text-black uppercase tracking-wider">
             {transaction ? 'Edit Transaction' : 'Add Transaction'}
           </h2>
           <button 
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 brutal-button brutal-shadow-hover animate-brutal-bounce"
             onClick={onClose}
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {errors.submit && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 dark:bg-red-100 brutal-card px-3 py-2 text-sm font-bold text-black">
               {errors.submit}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               Import from image
             </label>
             <div className="flex items-center gap-3">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  try {
-                    setLoading(true);
-                    const res = await transactionAPI.analyzeImage(file);
-                    if (res.success) {
-                      const data = res.data;
-                      setFormData((prev) => ({
-                        ...prev,
-                        title: data.record_title || prev.title,
-                        amount: data.record_amount != null ? String(data.record_amount) : prev.amount,
-                        category: data.record_category || prev.category,
-                        type: data.record_flow || prev.type,
-                        description: data.record_description || prev.description
-                      }));
-                      // Refresh categories if type changed
-                      if (data.record_flow && data.record_flow !== formData.type) {
-                        await loadCategories();
+              <label className="px-3 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce cursor-pointer text-sm">
+                Choose File
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      setLoading(true);
+                      const res = await transactionAPI.analyzeImage(file);
+                      if (res.success) {
+                        const data = res.data;
+                        setFormData((prev) => ({
+                          ...prev,
+                          title: data.record_title || prev.title,
+                          amount: data.record_amount != null ? String(data.record_amount) : prev.amount,
+                          category: data.record_category || prev.category,
+                          type: data.record_flow || prev.type,
+                          description: data.record_description || prev.description
+                        }));
+                        // Refresh categories if type changed
+                        if (data.record_flow && data.record_flow !== formData.type) {
+                          await loadCategories();
+                        }
+                      } else {
+                        console.error(res.message || 'Failed to analyze image');
+                        alert(res.message || 'Failed to analyze image');
                       }
-                    } else {
-                      console.error(res.message || 'Failed to analyze image');
-                      alert(res.message || 'Failed to analyze image');
+                    } catch (err) {
+                      console.error(err);
+                      alert(err.response?.data?.message || 'Image analysis failed');
+                    } finally {
+                      setLoading(false);
+                      e.target.value = '';
                     }
-                  } catch (err) {
-                    console.error(err);
-                    alert(err.response?.data?.message || 'Image analysis failed');
-                  } finally {
-                    setLoading(false);
-                    e.target.value = '';
-                  }
-                }}
-                className="block w-full text-sm text-gray-900 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-200 dark:hover:file:bg-gray-600"
-              />
+                  }}
+                  className="hidden"
+                />
+              </label>
+              <span className="text-sm text-black font-bold">No file chosen</span>
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Upload a transaction receipt image to auto-fill fields.</p>
+            <p className="mt-1 text-xs text-black font-bold">Upload a transaction receipt image to auto-fill fields.</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               Or, speak your transaction
             </label>
             <div className="flex items-center gap-3">
               {!recording ? (
                 <button
                   type="button"
-                  className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white inline-flex items-center gap-2"
+                  className="px-3 py-2 bg-red-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce inline-flex items-center gap-2 text-sm"
                   onClick={async () => {
                     try {
                       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -276,36 +280,36 @@ const TransactionForm = ({
                     }
                   }}
                 >
-                  <Mic size={16} /> Start speaking
+                  <Mic size={14} /> Start speaking
                 </button>
               ) : (
                 <button
                   type="button"
-                  className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 inline-flex items-center gap-2"
+                  className="px-3 py-2 bg-gray-400 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce inline-flex items-center gap-2 text-sm"
                   onClick={() => {
                     try { mediaRecorder && mediaRecorder.stop(); } catch {}
                     setRecording(false);
                   }}
                 >
-                  <Square size={16} /> Stop
+                  <Square size={14} /> Stop
                 </button>
               )}
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Say something like: “Expense, Groceries, ₹550, dinner at cafe, today”.</p>
+            <p className="mt-1 text-xs text-black font-bold">Say something like: "Expense, Groceries, ₹550, dinner at cafe, today".</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label className="block text-sm font-black text-black mb-3 uppercase tracking-wide">
               <Type size={16} className="inline mr-2" />
               Transaction Type *
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                className={`p-3 rounded-lg border-2 font-medium transition-all ${
+                className={`p-3 font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm ${
                   formData.type === 'expense' 
-                    ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 dark:border-red-500' 
-                    : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500'
+                    ? 'bg-red-500 text-white' 
+                    : 'bg-white text-black'
                 }`}
                 onClick={() => handleChange({ target: { name: 'type', value: 'expense' } })}
               >
@@ -313,10 +317,10 @@ const TransactionForm = ({
               </button>
               <button
                 type="button"
-                className={`p-3 rounded-lg border-2 font-medium transition-all ${
+                className={`p-3 font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm ${
                   formData.type === 'income' 
-                    ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 dark:border-green-500' 
-                    : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500'
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-white text-black'
                 }`}
                 onClick={() => handleChange({ target: { name: 'type', value: 'income' } })}
               >
@@ -326,7 +330,7 @@ const TransactionForm = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               <Type size={16} className="inline mr-2" />
               Title *
             </label>
@@ -335,19 +339,19 @@ const TransactionForm = ({
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+              className={`w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-sm ${
                 errors.title 
-                  ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                  ? 'bg-red-50 dark:bg-red-100' 
+                  : 'bg-white dark:bg-white'
               }`}
-              placeholder="Enter transaction title"
+              placeholder="ENTER TRANSACTION TITLE"
               maxLength={100}
             />
-            {errors.title && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>}
+            {errors.title && <p className="mt-1 text-sm text-black font-bold">{errors.title}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               <DollarSign size={16} className="inline mr-2" />
               Amount (₹) *
             </label>
@@ -359,18 +363,18 @@ const TransactionForm = ({
                 const formatted = formatAmount(e.target.value);
                 handleChange({ target: { name: 'amount', value: formatted } });
               }}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+              className={`w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-sm ${
                 errors.amount 
-                  ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                  ? 'bg-red-50 dark:bg-red-100' 
+                  : 'bg-white dark:bg-white'
               }`}
               placeholder="0.00"
             />
-            {errors.amount && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.amount}</p>}
+            {errors.amount && <p className="mt-1 text-sm text-black font-bold">{errors.amount}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               <Tag size={16} className="inline mr-2" />
               Category *
             </label>
@@ -379,13 +383,13 @@ const TransactionForm = ({
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+              className={`w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-sm ${
                 errors.category 
-                  ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                  ? 'bg-red-50 dark:bg-red-100' 
+                  : 'bg-white dark:bg-white'
               }`}
             >
-              <option value="">Select category</option>
+              <option value="">SELECT CATEGORY</option>
               {categories.map(category => (
                 <option key={category._id} value={category.name}>
                   {category.name}
@@ -393,13 +397,13 @@ const TransactionForm = ({
               ))}
             </select>
             </div>
-            {errors.category && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category}</p>}
+            {errors.category && <p className="mt-1 text-sm text-black font-bold">{errors.category}</p>}
           </div>
 
           
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               <Calendar size={16} className="inline mr-2" />
               Date *
             </label>
@@ -408,30 +412,30 @@ const TransactionForm = ({
               name="date"
               value={formData.date}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring appearance-none [color-scheme:light] dark:[color-scheme:dark] text-sm"
               max={new Date().toLocaleDateString('en-CA')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
               Description
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-              placeholder="Optional description"
+              className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring resize-none text-sm"
+              placeholder="OPTIONAL DESCRIPTION"
               rows={3}
               maxLength={500}
             />
           </div>
 
-          <div className="flex space-x-4 pt-4">
+          <div className="flex space-x-3 pt-4">
             <button
               type="button"
-              className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-2 bg-white text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               onClick={onClose}
               disabled={loading}
             >
@@ -440,10 +444,10 @@ const TransactionForm = ({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+              className="flex-1 px-3 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 bg-orange-500 brutal-border brutal-shadow animate-brutal-pulse"></div>
               ) : (
                 <span>{transaction ? 'Update' : 'Add Transaction'}</span>
               )}

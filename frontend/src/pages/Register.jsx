@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -105,89 +104,85 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-      
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <UserPlus size={32} className="text-white" />
+        <div className="bg-white dark:bg-white brutal-card p-6">
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center mx-auto mb-3">
+              <UserPlus size={24} className="text-black font-bold" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h1>
-            <p className="text-gray-600 dark:text-gray-400">Join us today</p>
+            <h1 className="text-xl font-black text-black mb-2 uppercase tracking-wider">Create Account</h1>
+            <p className="text-black font-bold text-sm">Join us today</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {authError && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-50 dark:bg-red-100 brutal-card px-3 py-2 text-sm font-bold text-black">
                 {authError}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
                 Full Name
               </label>
               <div className="relative">
-                <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <User size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black font-bold" />
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  className={`w-full pl-10 pr-4 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.name 
-                      ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      ? 'bg-red-50 dark:bg-red-100' 
+                      : 'bg-white dark:bg-white'
                   }`}
                   placeholder="Enter your full name"
                   required
                 />
               </div>
-              {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
+              {errors.name && <p className="mt-1 text-sm text-black font-bold">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Mail size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black font-bold" />
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  className={`w-full pl-10 pr-4 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.email 
-                      ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      ? 'bg-red-50 dark:bg-red-100' 
+                      : 'bg-white dark:bg-white'
                   }`}
                   placeholder="Enter your email"
                   required
                 />
               </div>
-              {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-sm text-black font-bold">{errors.email}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
                 Password
               </label>
               <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Lock size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black font-bold" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  className={`w-full pl-10 pr-12 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.password 
-                      ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      ? 'bg-red-50 dark:bg-red-100' 
+                      : 'bg-white dark:bg-white'
                   }`}
                   placeholder="Create a password"
                   required
@@ -195,29 +190,29 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black font-bold"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
+              {errors.password && <p className="mt-1 text-sm text-black font-bold">{errors.password}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Lock size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black font-bold" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  className={`w-full pl-10 pr-12 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.confirmPassword 
-                      ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      ? 'bg-red-50 dark:bg-red-100' 
+                      : 'bg-white dark:bg-white'
                   }`}
                   placeholder="Confirm your password"
                   required
@@ -225,27 +220,27 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black font-bold"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {errors.confirmPassword && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && <p className="mt-1 text-sm text-black font-bold">{errors.confirmPassword}</p>}
             </div>
 
             <div className="flex items-start">
               <input 
                 type="checkbox" 
                 required 
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mt-1"
+                className="w-4 h-4 text-orange-500 bg-white border-black rounded focus:ring-orange-500 focus:ring-2 mt-1"
               />
-              <label className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+              <label className="ml-2 text-sm text-black font-bold">
                 I agree to the{' '}
-                <Link to="/terms" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                <Link to="/terms" className="text-black font-bold hover:text-orange-500">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="/privacy" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                <Link to="/privacy" className="text-black font-bold hover:text-orange-500">
                   Privacy Policy
                 </Link>
               </label>
@@ -254,23 +249,23 @@ const Register = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+              className="w-full bg-orange-500 text-black font-black uppercase tracking-wide py-2 px-4 brutal-button brutal-shadow-hover animate-brutal-bounce disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm"
             >
               {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 bg-orange-500 brutal-border brutal-shadow animate-brutal-pulse"></div>
               ) : (
                 <>
-                  <UserPlus size={20} />
+                  <UserPlus size={16} />
                   <span>Create Account</span>
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="mt-6 text-center">
+            <p className="text-black font-bold text-sm">
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+              <Link to="/login" className="text-black font-bold hover:text-orange-500">
                 Sign in here
               </Link>
             </p>

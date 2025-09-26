@@ -126,91 +126,96 @@ const Transactions = () => {
   };
 
   return (
-    <div className="h-full p-6 space-y-6 overflow-y-auto pb-20">
+    <div className="h-full p-4 space-y-6 overflow-y-auto pb-20 bg-gray-100 dark:bg-gray-100">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Transactions</h1>
+        <h1 className="text-3xl sm:text-4xl font-black text-black uppercase tracking-wider">Transactions</h1>
         <button 
-          className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 brutal-button brutal-shadow-hover animate-brutal-bounce disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={loadTransactions}
           disabled={loading}
         >
-          <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={20} className={loading ? 'animate-brutal-pulse' : ''} />
         </button>
       </div>
 
       {/* Summary Cards hidden as requested */}
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="brutal-card p-4">
         <div className="space-y-4">
           <div className="relative">
-            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black font-bold" />
             <input
               type="text"
-              placeholder="Search transactions..."
+              placeholder="SEARCH TRANSACTIONS..."
               value={filters.search}
               onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full pl-10 pr-3 py-3 brutal-input font-bold uppercase tracking-wide focus-ring text-sm"
             />
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+          <div className="flex flex-wrap gap-3 items-center">
             <button
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm ${
                 filters.type === '' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-orange-500 text-black' 
+                  : 'bg-white text-black'
               }`}
               onClick={() => handleFilterChange('type', '')}
             >
               All
             </button>
             <button
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm ${
                 filters.type === 'income' 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-green-500 text-black' 
+                  : 'bg-white text-black'
               }`}
               onClick={() => handleFilterChange('type', 'income')}
             >
               Income
             </button>
             <button
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm ${
                 filters.type === 'expense' 
-                  ? 'bg-red-600 text-white' 
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-red-500 text-black' 
+                  : 'bg-white text-black'
               }`}
               onClick={() => handleFilterChange('type', 'expense')}
             >
               Expense
             </button>
-            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 sm:mx-2"></div>
+            <div className="h-6 w-1 bg-black mx-2"></div>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">Start date</label>
+              <label className="text-xs font-black text-black mb-1 uppercase tracking-wide">Start Date</label>
               <input
                 type="date"
                 value={filters.startDate}
                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none [color-scheme:light] dark:[color-scheme:dark]"
+                className="px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring appearance-none [color-scheme:light] dark:[color-scheme:dark] text-sm"
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">End date</label>
+              <label className="text-xs font-black text-black mb-1 uppercase tracking-wide">End Date</label>
               <input
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none [color-scheme:light] dark:[color-scheme:dark]"
+                className="px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring appearance-none [color-scheme:light] dark:[color-scheme:dark] text-sm"
               />
             </div>
             {(filters.startDate || filters.endDate) && (
-              <button 
-                className="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
-                onClick={clearFilters}
-              >
-                Clear
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-black font-bold">
+                  Date filter: {filters.startDate || 'Any'} to {filters.endDate || 'Any'}
+                </span>
+                <button 
+                  className="px-4 py-2 bg-red-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm"
+                  onClick={clearFilters}
+                >
+                  Clear
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -220,18 +225,18 @@ const Transactions = () => {
       <div className="space-y-4">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading transactions...</p>
+            <div className="w-12 h-12 bg-orange-500 brutal-border brutal-shadow animate-brutal-pulse"></div>
+            <p className="text-black font-black text-lg uppercase tracking-wide">Loading transactions...</p>
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <TrendingUp size={32} className="text-gray-400 dark:text-gray-500" />
+            <div className="w-16 h-16 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center mx-auto mb-4">
+              <TrendingUp size={32} className="text-black font-bold" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No transactions found</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">Start by adding your first transaction</p>
+            <h3 className="text-2xl font-black text-black mb-3 uppercase tracking-wide">No transactions found</h3>
+            <p className="text-black font-bold text-base mb-6">Start by adding your first transaction</p>
             <button 
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm"
               onClick={() => setShowForm(true)}
             >
               <Plus size={20} />

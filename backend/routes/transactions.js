@@ -319,8 +319,16 @@ router.get('/', authenticateToken, parseQuery(ListQuerySchema), async (req, res)
     
     if (startDate || endDate) {
       filter.date = {};
-      if (startDate) filter.date.$gte = new Date(startDate);
-      if (endDate) filter.date.$lte = new Date(endDate);
+      if (startDate) {
+        // Create date at start of day in local timezone
+        const start = new Date(startDate + 'T00:00:00');
+        filter.date.$gte = start;
+      }
+      if (endDate) {
+        // Create date at end of day in local timezone
+        const end = new Date(endDate + 'T23:59:59.999');
+        filter.date.$lte = end;
+      }
     }
 
     if (search) {

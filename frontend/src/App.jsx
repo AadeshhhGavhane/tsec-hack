@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Welcome from './pages/Welcome';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Transactions from './pages/Transactions';
@@ -32,7 +33,7 @@ function App() {
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route index element={<Welcome />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="dashboard/profile" element={<Profile />} />
               <Route path="dashboard/transactions" element={<Transactions />} />
@@ -50,7 +51,7 @@ function App() {
             </Route>
             
             {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           </div>
         </Router>
