@@ -24,7 +24,7 @@ const Header = ({ onMenuClick, onChatToggle }) => {
 
   return (
     <>
-    <header className="bg-white dark:bg-white brutal-border-b-3 px-4 lg:px-6 py-4 sticky top-0 z-30 brutal-shadow">
+        <header className="brutal-border-b-3 px-4 lg:px-6 py-4 sticky top-0 z-30 brutal-shadow" style={{ backgroundColor: 'var(--white)' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button 
@@ -61,8 +61,8 @@ const Header = ({ onMenuClick, onChatToggle }) => {
         </div>
       </div>
     </header>
-    {openAlerts && (
-      <div className="absolute right-4 top-16 z-40 w-80 bg-white dark:bg-white brutal-card p-4 animate-brutal-slide">
+        {openAlerts && (
+          <div className="absolute right-4 top-16 z-40 w-80 brutal-card p-4 animate-brutal-slide" style={{ backgroundColor: 'var(--white)' }}>
         <div className="flex items-center justify-between mb-4">
           <div className="font-black text-black uppercase tracking-wide">Alerts</div>
           <button className="text-sm px-3 py-2 bg-red-500 text-black font-bold uppercase tracking-wide brutal-button brutal-shadow-hover" onClick={()=>setOpenAlerts(false)}>Close</button>

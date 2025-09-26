@@ -126,7 +126,7 @@ const Transactions = () => {
   };
 
   return (
-    <div className="h-full p-4 space-y-6 overflow-y-auto pb-20 bg-gray-100 dark:bg-gray-100">
+      <div className="h-full p-4 space-y-6 overflow-y-auto pb-20" style={{ backgroundColor: 'var(--gray-light)' }}>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl sm:text-4xl font-black text-black uppercase tracking-wider">Transactions</h1>
         <button 

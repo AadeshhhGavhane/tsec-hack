@@ -158,7 +158,7 @@ const TransactionForm = ({
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-white brutal-card w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="brutal-card w-full max-w-lg max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--white)' }}>
         <div className="flex items-center justify-between p-4 brutal-border-b-3">
           <h2 className="text-lg font-black text-black uppercase tracking-wider">
             {transaction ? 'Edit Transaction' : 'Add Transaction'}
@@ -342,7 +342,7 @@ const TransactionForm = ({
               className={`w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-sm ${
                 errors.title 
                   ? 'bg-red-50 dark:bg-red-100' 
-                  : 'bg-white dark:bg-white'
+                  : ''
               }`}
               placeholder="ENTER TRANSACTION TITLE"
               maxLength={100}
@@ -366,7 +366,7 @@ const TransactionForm = ({
               className={`w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-sm ${
                 errors.amount 
                   ? 'bg-red-50 dark:bg-red-100' 
-                  : 'bg-white dark:bg-white'
+                  : ''
               }`}
               placeholder="0.00"
             />
@@ -386,7 +386,7 @@ const TransactionForm = ({
               className={`w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide focus-ring text-sm ${
                 errors.category 
                   ? 'bg-red-50 dark:bg-red-100' 
-                  : 'bg-white dark:bg-white'
+                  : ''
               }`}
             >
               <option value="">SELECT CATEGORY</option>

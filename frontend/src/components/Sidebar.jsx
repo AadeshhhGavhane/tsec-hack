@@ -48,13 +48,13 @@ const Sidebar = ({ isOpen, onClose }) => {
       
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-white
+        fixed top-0 left-0 z-50 h-full w-64
         brutal-border brutal-shadow
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:relative lg:translate-x-0 lg:shadow-none
-      `}>
-        <div className="flex items-center justify-between p-6 brutal-border-b-3">
+      `} style={{ backgroundColor: 'var(--white)' }}>
+        <div className="flex items-center justify-between p-6 brutal-border-b-3" style={{ backgroundColor: 'var(--white)' }}>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center">
               <LayoutDashboard size={24} className="text-black font-bold" />

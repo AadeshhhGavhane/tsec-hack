@@ -11,7 +11,7 @@ const Welcome = () => {
   ];
 
   return (
-    <div className="h-full p-4 space-y-6 overflow-y-auto bg-gray-100 dark:bg-gray-100">
+    <div className="h-full p-4 space-y-6 overflow-y-auto" style={{ backgroundColor: 'var(--gray-light)' }}>
       <div className="text-center mb-8">
         <div className="w-20 h-20 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center mx-auto mb-4">
           <LayoutDashboard size={40} className="text-black font-bold" />

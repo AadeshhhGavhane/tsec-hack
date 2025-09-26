@@ -35,7 +35,7 @@ const Layout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-100 transition-colors overflow-hidden">
+    <div className="flex h-screen transition-colors overflow-hidden" style={{ backgroundColor: 'var(--gray-light)' }}>
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={closeSidebar} 

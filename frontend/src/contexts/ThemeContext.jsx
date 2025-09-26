@@ -33,6 +33,8 @@ export const ThemeProvider = ({ children }) => {
     // Debug logging
     console.log('Theme context: Setting theme to', theme);
     console.log('HTML classes after setting:', root.className);
+    console.log('CSS variables test - --black:', getComputedStyle(root).getPropertyValue('--black'));
+    console.log('CSS variables test - --white:', getComputedStyle(root).getPropertyValue('--white'));
     
     // Save to localStorage
     localStorage.setItem('theme', theme);

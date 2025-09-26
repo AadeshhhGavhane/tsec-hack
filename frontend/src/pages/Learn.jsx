@@ -64,7 +64,7 @@ const Learn = () => {
   };
 
   return (
-    <div className="h-full p-4 space-y-6 overflow-y-auto bg-gray-100 dark:bg-gray-100">
+      <div className="h-full p-4 space-y-6 overflow-y-auto" style={{ backgroundColor: 'var(--gray-light)' }}>
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>

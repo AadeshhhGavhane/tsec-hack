@@ -28,7 +28,7 @@ const LearnHistory = () => {
   };
 
   return (
-    <div className="h-full p-4 space-y-4 overflow-y-auto bg-gray-100 dark:bg-gray-100">
+        <div className="h-full p-4 space-y-4 overflow-y-auto" style={{ backgroundColor: 'var(--gray-light)' }}>
       <div className="mb-4">
         <h1 className="text-2xl font-black text-black uppercase tracking-wider">Quiz History</h1>
         <p className="text-black font-bold text-sm">Review your past attempts and answers.</p>

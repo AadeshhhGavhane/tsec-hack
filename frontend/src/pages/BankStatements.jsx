@@ -71,7 +71,7 @@ const BankStatements = () => {
 
 
   return (
-    <div className="h-full p-4 space-y-6 overflow-y-auto bg-gray-100 dark:bg-gray-100">
+        <div className="h-full p-4 space-y-6 overflow-y-auto" style={{ backgroundColor: 'var(--gray-light)' }}>
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl sm:text-4xl font-black text-black mb-3 uppercase tracking-wider">
@@ -90,11 +90,11 @@ const BankStatements = () => {
         
         <label className="flex items-center justify-center w-full h-32 brutal-border brutal-shadow brutal-shadow-hover cursor-pointer bg-orange-100 dark:bg-orange-200 transition-all duration-200">
           <div className="flex flex-col items-center">
-            <Upload size={32} className="text-black mb-2 font-bold" />
-            <div className="text-sm font-black text-black uppercase tracking-wide text-center">
+            <Upload size={32} className="mb-2 font-bold" style={{ color: '#1a1a1a' }} />
+            <div className="text-sm font-black uppercase tracking-wide text-center" style={{ color: '#1a1a1a' }}>
               {uploading ? 'Uploading...' : 'Click to upload PDF bank statement'}
             </div>
-            <div className="text-xs text-black font-bold mt-1">
+            <div className="text-xs font-bold mt-1" style={{ color: '#1a1a1a' }}>
               Supported format: PDF only
             </div>
           </div>

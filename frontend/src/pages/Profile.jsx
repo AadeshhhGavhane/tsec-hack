@@ -71,7 +71,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="h-full p-4 space-y-6 overflow-y-auto bg-gray-100 dark:bg-gray-100">
+      <div className="h-full p-4 space-y-6 overflow-y-auto" style={{ backgroundColor: 'var(--gray-light)' }}>
       <div className="mb-6">
         <h1 className="text-3xl sm:text-4xl font-black text-black mb-3 uppercase tracking-wider">Profile Settings</h1>
         <p className="text-black font-bold text-base">Manage your account information and preferences</p>

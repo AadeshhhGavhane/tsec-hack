@@ -104,9 +104,9 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--gray-light)' }}>
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-white brutal-card p-6">
+        <div className="brutal-card p-6" style={{ backgroundColor: 'var(--white)' }}>
           <div className="text-center mb-6">
             <div className="w-12 h-12 bg-orange-500 brutal-border brutal-shadow flex items-center justify-center mx-auto mb-3">
               <UserPlus size={24} className="text-black font-bold" />
@@ -136,7 +136,7 @@ const Register = () => {
                   className={`w-full pl-10 pr-4 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.name 
                       ? 'bg-red-50 dark:bg-red-100' 
-                      : 'bg-white dark:bg-white'
+                      : ''
                   }`}
                   placeholder="Enter your full name"
                   required
@@ -159,7 +159,7 @@ const Register = () => {
                   className={`w-full pl-10 pr-4 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.email 
                       ? 'bg-red-50 dark:bg-red-100' 
-                      : 'bg-white dark:bg-white'
+                      : ''
                   }`}
                   placeholder="Enter your email"
                   required
@@ -182,7 +182,7 @@ const Register = () => {
                   className={`w-full pl-10 pr-12 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.password 
                       ? 'bg-red-50 dark:bg-red-100' 
-                      : 'bg-white dark:bg-white'
+                      : ''
                   }`}
                   placeholder="Create a password"
                   required
@@ -212,7 +212,7 @@ const Register = () => {
                   className={`w-full pl-10 pr-12 py-2 brutal-input font-bold focus-ring text-sm ${
                     errors.confirmPassword 
                       ? 'bg-red-50 dark:bg-red-100' 
-                      : 'bg-white dark:bg-white'
+                      : ''
                   }`}
                   placeholder="Confirm your password"
                   required

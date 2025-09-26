@@ -145,9 +145,9 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 sm:right-0 sm:top-16 sm:bottom-0 sm:w-80 sm:w-96 sm:inset-auto z-50 bg-white dark:bg-white brutal-border brutal-shadow flex flex-col">
+        <div className="fixed inset-0 sm:right-0 sm:top-16 sm:bottom-0 sm:w-80 sm:w-96 sm:inset-auto z-50 brutal-border brutal-shadow flex flex-col" style={{ backgroundColor: 'var(--white)' }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 brutal-border-b-3 bg-white dark:bg-white flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 brutal-border-b-3 flex-shrink-0" style={{ backgroundColor: 'var(--white)' }}>
             <div className="font-black text-black text-lg uppercase tracking-wide">Assistant</div>
             <button 
               onClick={onClose} 
@@ -198,7 +198,7 @@ const Chatbot = ({ open = false, onClose = () => {} }) => {
           </div>
           
           {/* Input Area - Fixed at bottom */}
-          <div className="brutal-border-t-3 p-4 bg-white dark:bg-white flex-shrink-0">
+          <div className="brutal-border-t-3 p-4 flex-shrink-0" style={{ backgroundColor: 'var(--white)' }}>
             <div className="flex items-center gap-2">
               <button 
                 className={`p-2 brutal-button brutal-shadow-hover animate-brutal-bounce ${
