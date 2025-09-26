@@ -17,6 +17,8 @@ const alertsRoutes = require('./routes/alerts');
 const passkeyRoutes = require('./routes/passkeys');
 const chatRoutes = require('./routes/chat');
 const bankStatementRoutes = require('./routes/bankStatements');
+const categoryBudgetRoutes = require('./routes/categoryBudgets');
+const aiBudgetRoutes = require('./routes/aiBudget');
 
 const app = express();
 
@@ -58,6 +60,8 @@ app.use('/api/alerts', alertsRoutes);
 app.use('/api/passkeys', passkeyRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/bank-statements', bankStatementRoutes);
+app.use('/api/category-budgets', categoryBudgetRoutes);
+app.use('/api/ai-budget', aiBudgetRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -77,6 +81,8 @@ app.get('/', (req, res) => {
       passkeys: '/api/passkeys',
       chat: '/api/chat',
       bankStatements: '/api/bank-statements',
+      categoryBudgets: '/api/category-budgets',
+      aiBudget: '/api/ai-budget',
       health: '/health'
     }
   });

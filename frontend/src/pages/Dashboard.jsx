@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
-import { transactionAPI } from '../services/api';
+import { transactionAPI, insightsAPI } from '../services/api';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [recent, setRecent] = useState([]);
+  const [categoryTotals, setCategoryTotals] = useState({});
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -14,6 +15,20 @@ const Dashboard = () => {
         if (response.success) {
           setSummary(response.data.summary ?? { totalIncome: 0, totalExpense: 0, balance: 0 });
           setRecent(response.data.transactions ?? []);
+        }
+        
+        // Load spending insights for pie chart
+        try {
+          const ins = await insightsAPI.getSpending(6);
+          if (ins.success) {
+            const map = {}; 
+            (ins.data.categories || []).forEach(c => { 
+              map[c.name] = c.total; 
+            });
+            setCategoryTotals(map);
+          }
+        } catch (error) {
+          console.error('Error fetching spending insights:', error);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -80,6 +95,39 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Expense Distribution Pie Chart */}
+      {Object.keys(categoryTotals).length > 0 && (
+        <div className="brutal-card p-4">
+          <div className="text-lg font-black text-black mb-4 uppercase tracking-wide">Expense Distribution</div>
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="w-32 h-32 sm:w-48 sm:h-48 brutal-border brutal-shadow flex-shrink-0" style={{
+              background: (() => { 
+                const entries = Object.entries(categoryTotals); 
+                const total = entries.reduce((a, [_n, v]) => a + v, 0) || 1; 
+                let acc = 0; 
+                return `conic-gradient(${entries.map(([n, v], i) => { 
+                  const start = Math.round((acc / total) * 360); 
+                  acc += v; 
+                  const end = Math.round((acc / total) * 360); 
+                  return `hsl(${(i * 57) % 360} 70% 50%) ${start}deg ${end}deg`; 
+                }).join(', ')})`; 
+              })()
+            }}></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              {Object.entries(categoryTotals).map(([name, total], i) => (
+                <div key={name} className="px-3 py-2 brutal-card bg-orange-50 dark:bg-orange-100 flex items-center justify-between">
+                  <span className="inline-flex items-center gap-2 min-w-0">
+                    <span className="inline-block w-3 h-3 brutal-border" style={{ backgroundColor: `hsl(${(i * 57) % 360} 70% 50%)` }}></span>
+                    <span className="text-black font-black text-xs truncate uppercase tracking-wide">{name}</span>
+                  </span>
+                  <span className="text-black text-xs font-black whitespace-nowrap">₹{Math.round(total).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Recent Transactions */}
       <div className="brutal-card p-4">

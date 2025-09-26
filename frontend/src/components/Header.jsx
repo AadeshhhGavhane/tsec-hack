@@ -1,7 +1,6 @@
-import { Menu, Bell, Search } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { alertsAPI } from '../services/api';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -19,8 +18,13 @@ const Header = ({ onMenuClick, onChatToggle }) => {
       if (res.success) setAlerts(res.data.alerts||[]);
     } finally { setLoadingAlerts(false); }
   };
-  const location = useLocation();
-  const hideGlobalSearch = location.pathname.startsWith('/dashboard/categories');
+
+  // Load alerts on component mount
+  useEffect(() => {
+    if (user) {
+      loadAlerts();
+    }
+  }, [user]);
 
   return (
     <>
@@ -34,23 +38,12 @@ const Header = ({ onMenuClick, onChatToggle }) => {
           >
             <Menu size={24} />
           </button>
-          
-          {!hideGlobalSearch && (
-          <div className="relative hidden sm:block">
-            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black font-bold" />
-            <input 
-              type="text" 
-              placeholder="SEARCH..." 
-              className="pl-10 pr-4 py-3 w-48 sm:w-64 brutal-input text-sm font-bold uppercase tracking-wide focus-ring"
-            />
-          </div>
-          )}
         </div>
 
         <div className="flex items-center space-x-4">
           <ThemeToggle />
           
-          <button className="relative p-3 brutal-button brutal-shadow-hover animate-brutal-bounce" aria-label="Notifications" onClick={()=>{ setOpenAlerts(v=>!v); if (!openAlerts) loadAlerts(); }}>
+          <button className="relative p-3 brutal-button brutal-shadow-hover animate-brutal-bounce" aria-label="Notifications" onClick={()=>{ setOpenAlerts(v=>!v); }}>
             <Bell size={20} />
             {alerts.length>0 && (<span className="absolute -top-1 -right-1 bg-red-500 text-black text-xs font-black h-6 min-w-6 px-1 flex items-center justify-center brutal-border">{alerts.length}</span>)}
           </button>

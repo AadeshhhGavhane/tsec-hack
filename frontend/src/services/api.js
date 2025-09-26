@@ -231,6 +231,42 @@ export const alertsAPI = {
   }
 };
 
+// Category Budgets API functions
+export const categoryBudgetAPI = {
+  getBudgets: async () => {
+    const response = await api.get('/category-budgets');
+    return response.data;
+  },
+  createBudget: async (budgetData) => {
+    const response = await api.post('/category-budgets', budgetData);
+    return response.data;
+  },
+  updateBudget: async (budgetId, budgetData) => {
+    const response = await api.put(`/category-budgets/${budgetId}`, budgetData);
+    return response.data;
+  },
+  deleteBudget: async (budgetId) => {
+    const response = await api.delete(`/category-budgets/${budgetId}`);
+    return response.data;
+  },
+  checkAlerts: async (categoryName, amount) => {
+    const response = await api.post('/category-budgets/check-alerts', { categoryName, amount });
+    return response.data;
+  }
+};
+
+// AI Budget API functions
+export const aiBudgetAPI = {
+  autoAllocate: async (availableBalance, preferences) => {
+    const response = await api.post('/ai-budget/auto-allocate', { availableBalance, preferences });
+    return response.data;
+  },
+  suggest: async (availableBalance) => {
+    const response = await api.post('/ai-budget/suggest', { availableBalance });
+    return response.data;
+  }
+};
+
 // Passkeys API (hackathon-friendly)
 export const passkeysAPI = {
   beginRegister: async () => {
