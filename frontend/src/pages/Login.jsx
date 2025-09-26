@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Mail, Lock, Eye, EyeOff, KeySquare } from 'lucide-react';
+import { passkeysAPI } from '../services/api';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Login = () => {
@@ -81,6 +82,41 @@ const Login = () => {
       console.error('Login error:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const loginWithPasskey = async () => {
+    try {
+      // Begin
+      const begin = await passkeysAPI.beginAuth(formData.email || undefined);
+      if (!begin.success) return alert(begin.message || 'Passkey start failed');
+      const options = begin.data.options.publicKey;
+      // Fix binary fields for WebAuthn (hackathon: assume already base64url strings)
+      const b64urlToBytes = (b64url) => { const pad=(s)=> s + '==='.slice((s.length+3)%4); const b64=pad(String(b64url).replace(/-/g,'+').replace(/_/g,'/')); const bin=atob(b64); const bytes=new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes; };
+      const cred = await navigator.credentials.get({ publicKey: {
+        ...options,
+        challenge: b64urlToBytes(options.challenge),
+        allowCredentials: (options.allowCredentials||[]).map(c=> ({ ...c, id: b64urlToBytes(String(c.id)) }))
+      }});
+      const clientDataJSON = btoa(String.fromCharCode(...new Uint8Array(cred.response.clientDataJSON)));
+      const authenticatorData = cred.response.authenticatorData ? btoa(String.fromCharCode(...new Uint8Array(cred.response.authenticatorData))) : undefined;
+      const signature = cred.response.signature ? btoa(String.fromCharCode(...new Uint8Array(cred.response.signature))) : undefined;
+      const userHandle = cred.response.userHandle ? btoa(String.fromCharCode(...new Uint8Array(cred.response.userHandle))) : undefined;
+      const finish = await passkeysAPI.finishAuth({ id: cred.id, rawId: cred.id, type: cred.type, response: { clientDataJSON, authenticatorData, signature, userHandle } });
+      if (!finish.success) return alert(finish.message || 'Passkey auth failed');
+      localStorage.setItem('token', finish.data.token);
+      // Optional: fetch user and store to align with AuthProvider expectations
+      try {
+        const resp = await (await import('../services/api')).authAPI.getMe();
+        if (resp?.success && resp?.data?.user) {
+          localStorage.setItem('user', JSON.stringify(resp.data.user));
+        }
+      } catch {}
+      // Force reload to let AuthProvider initialize from token
+      window.location.assign('/dashboard');
+    } catch (e) {
+      console.error(e);
+      alert('Passkey unsupported or cancelled');
     }
   };
 
@@ -187,6 +223,9 @@ const Login = () => {
           </form>
 
           <div className="mt-8 text-center">
+            <button onClick={loginWithPasskey} className="w-full mb-4 inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg">
+              <KeySquare size={18} /> Login with Passkey
+            </button>
             <p className="text-gray-600 dark:text-gray-400">
               Don't have an account?{' '}
               <Link to="/register" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">

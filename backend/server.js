@@ -14,6 +14,7 @@ const learnRoutes = require('./routes/learn');
 const budgetRoutes = require('./routes/budget');
 const insightsRoutes = require('./routes/insights');
 const alertsRoutes = require('./routes/alerts');
+const passkeyRoutes = require('./routes/passkeys');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/learn', learnRoutes);
 app.use('/api/budget', budgetRoutes);
 app.use('/api/insights', insightsRoutes);
 app.use('/api/alerts', alertsRoutes);
+app.use('/api/passkeys', passkeyRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -67,6 +69,7 @@ app.get('/', (req, res) => {
       budget: '/api/budget',
       insights: '/api/insights',
       alerts: '/api/alerts',
+      passkeys: '/api/passkeys',
       health: '/health'
     }
   });

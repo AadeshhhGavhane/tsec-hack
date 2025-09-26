@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Calendar, Save, Edit3 } from 'lucide-react';
+import { User, Mail, Calendar, Save, Edit3, KeySquare, Plus } from 'lucide-react';
+import { passkeysAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
@@ -11,6 +12,16 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [passkeyMsg, setPasskeyMsg] = useState('');
+
+  const b64urlToBytes = (b64url) => {
+    const pad = (str) => str + '==='.slice((str.length + 3) % 4);
+    const b64 = pad(String(b64url).replace(/-/g, '+').replace(/_/g, '/'));
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  };
 
   useEffect(() => {
     if (user) {
@@ -180,6 +191,34 @@ const Profile = () => {
             <div className="text-sm text-gray-600 dark:text-gray-400">Account Type</div>
             <div className="mt-1 font-semibold text-gray-900 dark:text-white">Standard</div>
           </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-3">
+            <div className="inline-flex items-center gap-2">
+              <KeySquare size={18} className="text-gray-700 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Security: Passkeys</h3>
+            </div>
+            <button onClick={async ()=>{
+              try {
+                setPasskeyMsg('');
+                const begin = await passkeysAPI.beginRegister();
+                if (!begin.success) return setPasskeyMsg(begin.message||'Failed to start');
+                const pub = begin.data.options.publicKey;
+                const cred = await navigator.credentials.create({ publicKey: {
+                  ...pub,
+                  challenge: b64urlToBytes(pub.challenge),
+                  user: { ...pub.user, id: b64urlToBytes(pub.user.id) }
+                }});
+                const attObj = cred.response.attestationObject ? btoa(String.fromCharCode(...new Uint8Array(cred.response.attestationObject))) : undefined;
+                const clientDataJSON = btoa(String.fromCharCode(...new Uint8Array(cred.response.clientDataJSON)));
+                const finish = await passkeysAPI.finishRegister({ id: cred.id, rawId: cred.id, type: cred.type, response: { attestationObject: attObj, clientDataJSON } });
+                if (!finish.success) setPasskeyMsg(finish.message||'Failed to add passkey'); else setPasskeyMsg('Passkey added');
+              } catch (e) { setPasskeyMsg('Passkey not supported or cancelled'); }
+            }} className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"><Plus size={14} /> Add Passkey</button>
+          </div>
+          {passkeyMsg && <div className="text-sm text-gray-700 dark:text-gray-300">{passkeyMsg}</div>}
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Add a passkey to sign in with Face/Touch ID or Windows Hello.</p>
         </div>
       </div>
     </div>

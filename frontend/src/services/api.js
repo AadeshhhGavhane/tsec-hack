@@ -228,4 +228,24 @@ export const alertsAPI = {
   }
 };
 
+// Passkeys API (hackathon-friendly)
+export const passkeysAPI = {
+  beginRegister: async () => {
+    const response = await api.post('/passkeys/register/begin');
+    return response.data;
+  },
+  finishRegister: async (credentialJSON) => {
+    const response = await api.post('/passkeys/register/finish', credentialJSON);
+    return response.data;
+  },
+  beginAuth: async (email) => {
+    const response = await api.post('/passkeys/auth/begin', { email });
+    return response.data;
+  },
+  finishAuth: async (credentialJSON) => {
+    const response = await api.post('/passkeys/auth/finish', credentialJSON);
+    return response.data;
+  }
+};
+
 export default api;
