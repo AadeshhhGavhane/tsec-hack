@@ -165,4 +165,28 @@ export const categoryAPI = {
   },
 };
 
+// Learn API functions
+export const learnAPI = {
+  generateQuiz: async ({ topic, difficulty, length = 5 }) => {
+    const response = await api.post('/learn/quizzes/generate', { topic, difficulty, length });
+    return response.data;
+  },
+  submitQuiz: async (quizId, { answers, timeTakenSec = 0 }) => {
+    const response = await api.post(`/learn/quizzes/${quizId}/submit`, { answers, timeTakenSec });
+    return response.data;
+  },
+  getHistory: async () => {
+    const response = await api.get('/learn/history');
+    return response.data;
+  },
+  getAttempt: async (attemptId) => {
+    const response = await api.get(`/learn/attempts/${attemptId}`);
+    return response.data;
+  },
+  recommend: async () => {
+    const response = await api.get('/learn/recommend');
+    return response.data;
+  }
+};
+
 export default api;

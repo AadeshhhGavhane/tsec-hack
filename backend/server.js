@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
 const transactionRoutes = require('./routes/transactions');
 const categoryRoutes = require('./routes/categories');
+const learnRoutes = require('./routes/learn');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/learn', learnRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -55,6 +57,7 @@ app.get('/', (req, res) => {
       protected: '/api/protected',
       transactions: '/api/transactions',
       categories: '/api/categories',
+      learn: '/api/learn',
       health: '/health'
     }
   });
