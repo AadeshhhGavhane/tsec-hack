@@ -7,9 +7,7 @@ import {
   X,
   CreditCard,
   Tag,
-  BookOpen,
-  Wallet,
-  BarChart2
+  BookOpen
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -25,8 +23,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/dashboard/transactions', icon: CreditCard, label: 'Transactions' },
     { path: '/dashboard/categories', icon: Tag, label: 'Categories' },
     { path: '/dashboard/learn', icon: BookOpen, label: 'Learn' },
-    { path: '/dashboard/budget', icon: Wallet, label: 'Budget' },
-    { path: '/dashboard/insights', icon: BarChart2, label: 'Insights' },
     { path: '/dashboard/profile', icon: User, label: 'Profile' },
   ];
 

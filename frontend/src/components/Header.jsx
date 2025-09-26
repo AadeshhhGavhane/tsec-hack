@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick, onChatToggle }) => {
   const { user } = useAuth();
   const [openAlerts, setOpenAlerts] = useState(false);
   const [alerts, setAlerts] = useState([]);
@@ -54,6 +54,7 @@ const Header = ({ onMenuClick }) => {
             <Bell size={20} />
             {alerts.length>0 && (<span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 min-w-5 px-1 flex items-center justify-center">{alerts.length}</span>)}
           </button>
+          <button className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white" onClick={onChatToggle}>Chat</button>
           <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 select-none">
             {user?.name}
           </span>

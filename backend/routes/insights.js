@@ -34,12 +34,12 @@ router.get('/spending', authenticateToken, async (req, res) => {
     }
     const monthly = monthsKeys.map(mk => ({ month: mk, total: monthlyTotals[mk] || 0 }));
 
-    const topCategories = Object.entries(categoryTotals)
+    const categories = Object.entries(categoryTotals)
       .sort((a,b)=>b[1]-a[1])
-      .slice(0,5)
       .map(([name, total])=>({ name, total }));
+    const topCategories = categories.slice(0,5);
 
-    res.json({ success: true, data: { monthly, topCategories } });
+    res.json({ success: true, data: { monthly, topCategories, categories } });
   } catch (error) {
     console.error('Insights spending error:', error);
     res.status(500).json({ success: false, message: 'Failed to load spending insights' });

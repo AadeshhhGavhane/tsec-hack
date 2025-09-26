@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { categoryAPI } from '../services/api';
+import { categoryAPI, insightsAPI } from '../services/api';
 import { Plus, Edit3, Trash2, Tag, Search } from 'lucide-react';
 
 const Categories = () => {
@@ -10,6 +10,7 @@ const Categories = () => {
   const [submitting, setSubmitting] = useState(false);
   const [typeFilter, setTypeFilter] = useState(''); // '', 'income', 'expense'
   const [search, setSearch] = useState('');
+  const [categoryTotals, setCategoryTotals] = useState({});
 
   const load = async () => {
     try {
@@ -19,6 +20,13 @@ const Categories = () => {
       console.log('Load categories response:', res);
       if (res.success) setCategories(res.data.categories || []);
       else console.warn('Failed to load categories:', res.message);
+      try {
+        const ins = await insightsAPI.getSpending(6);
+        if (ins.success) {
+          const map = {}; (ins.data.categories||[]).forEach(c=>{ map[c.name]=c.total; });
+          setCategoryTotals(map);
+        }
+      } catch {}
     } finally {
       setLoading(false);
     }
@@ -81,104 +89,92 @@ const Categories = () => {
         <p className="text-gray-600 dark:text-gray-400">Create and manage your income and expense categories.</p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
-          <div className="flex-1 relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-            <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+      {/* Compact toolbar: search, type, and quick add */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
           </div>
-          <div className="w-full sm:w-56">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Create / Edit */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category name</label>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="">All</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <div className="flex gap-2">
             <input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              placeholder="e.g. Groceries, Salary"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add category"
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
             <select
               value={form.type}
               onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-          </div>
-          <div className="self-end">
             <button
               type="button"
               disabled={submitting}
               onClick={handleSubmit}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+              className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+              title={editingId ? 'Update' : 'Add'}
             >
-              {editingId ? <Edit3 size={16} /> : <Plus size={16} />}
-              {editingId ? 'Update' : 'Add'}
+              {editingId ? <Edit3 size={14} /> : <Plus size={14} />}
             </button>
-            {editingId && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="ml-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg"
-              >
-                Cancel
-              </button>
-            )}
           </div>
-        </form>
+        </div>
       </div>
 
-      {/* List */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* List with horizontal cards and pie */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+        {/* Pie */}
+        {Object.keys(categoryTotals).length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Expense distribution</div>
+            <div className="flex flex-col sm:flex-row items-start gap-4">
+              <div className="w-36 h-36 sm:w-56 sm:h-56 rounded-full flex-shrink-0" style={{
+                background: (()=>{ const entries = Object.entries(categoryTotals); const total = entries.reduce((a,[_n,v])=>a+v,0)||1; let acc=0; return `conic-gradient(${entries.map(([n,v],i)=>{ const start=Math.round((acc/total)*360); acc+=v; const end=Math.round((acc/total)*360); return `hsl(${(i*57)%360} 70% 50%) ${start}deg ${end}deg`; }).join(', ')})`; })()
+              }}></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                {Object.entries(categoryTotals).map(([name,total],i)=> (
+                  <div key={name} className="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 min-w-0"><span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor:`hsl(${(i*57)%360} 70% 50%)` }}></span><span className="text-gray-800 dark:text-gray-200 text-sm truncate">{name}</span></span>
+                    <span className="text-gray-900 dark:text-white text-sm font-medium whitespace-nowrap">₹{Math.round(total).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="p-6 text-gray-600 dark:text-gray-400">Loading categories...</div>
         ) : categories.length === 0 ? (
           <div className="p-6 text-gray-600 dark:text-gray-400">No categories yet. Add your first one above.</div>
         ) : (
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {categories.map((cat) => (
-              <li key={cat._id} className="p-4 flex items-center justify-between">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {categories.map((cat, i) => (
+              <div key={cat._id} className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-md flex items-center justify-center ${cat.type === 'income' ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'}`}>
                     <Tag size={16} />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white inline-flex items-center gap-2">
-                      {cat.name}
-                      {cat.isDefault && (
-                        <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">Default</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{cat.type}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{cat.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">₹{Math.round(categoryTotals[cat.name]||0).toLocaleString()}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -188,19 +184,19 @@ const Categories = () => {
                     title={cat.isDefault ? 'Default categories cannot be edited' : 'Edit'}
                     disabled={!!cat.isDefault}
                   >
-                    <Edit3 size={16} /> Edit
+                    <Edit3 size={16} />
                   </button>
                   <button
                     className={`px-3 py-2 rounded-lg inline-flex items-center gap-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400`}
                     onClick={() => handleDelete(cat._id)}
                     title={cat.isDefault ? 'Hide default category' : 'Delete'}
                   >
-                    <Trash2 size={16} /> {cat.isDefault ? 'Hide' : 'Delete'}
+                    <Trash2 size={16} />
                   </button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>

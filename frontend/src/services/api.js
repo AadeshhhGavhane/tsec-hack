@@ -248,4 +248,11 @@ export const passkeysAPI = {
   }
 };
 
+export const chatAPI = {
+  chatWithTools: async (messages) => {
+    const response = await api.post('/chat/tool', { messages });
+    return response.data;
+  }
+};
+
 export default api;
