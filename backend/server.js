@@ -19,8 +19,24 @@ const passkeyRoutes = require('./routes/passkeys');
 const app = express();
 
 // Middleware
+// More permissive CORS for hackathon/dev: reflect requesting origin (only over http(s))
+const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173').split(',').map(s=>s.trim());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // mobile apps/curl
+    try {
+      const url = new URL(origin);
+      const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+      if (process.env.NODE_ENV !== 'production') return callback(null, true);
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes(`${url.protocol}//${url.hostname}:${url.port}`)) {
+        return callback(null, true);
+      }
+      if (isLocal) return callback(null, true);
+      return callback(new Error('CORS blocked'));
+    } catch {
+      return callback(new Error('CORS origin invalid'));
+    }
+  },
   credentials: true
 }));
 
