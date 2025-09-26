@@ -267,6 +267,32 @@ export const aiBudgetAPI = {
   }
 };
 
+// Financial Goals API functions
+export const financialGoalsAPI = {
+  getGoals: async (status, category) => {
+    const response = await api.get('/financial-goals', { 
+      params: { status, category } 
+    });
+    return response.data;
+  },
+  createGoal: async (goalData) => {
+    const response = await api.post('/financial-goals', goalData);
+    return response.data;
+  },
+  updateGoal: async (goalId, goalData) => {
+    const response = await api.put(`/financial-goals/${goalId}`, goalData);
+    return response.data;
+  },
+  deleteGoal: async (goalId) => {
+    const response = await api.delete(`/financial-goals/${goalId}`);
+    return response.data;
+  },
+  generateRoadmap: async (goalId) => {
+    const response = await api.post(`/financial-goals/${goalId}/ai-roadmap`);
+    return response.data;
+  }
+};
+
 // Passkeys API (hackathon-friendly)
 export const passkeysAPI = {
   beginRegister: async () => {

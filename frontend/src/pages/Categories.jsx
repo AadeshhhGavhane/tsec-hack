@@ -190,27 +190,8 @@ const Categories = () => {
         </div>
       </div>
 
-      {/* List with horizontal cards and pie */}
+      {/* Categories List */}
       <div className="brutal-card p-4">
-        {/* Pie */}
-        {Object.keys(categoryTotals).length > 0 && (
-          <div className="mb-6">
-            <div className="text-lg font-black text-black mb-3 uppercase tracking-wide">Expense Distribution</div>
-            <div className="flex flex-col sm:flex-row items-start gap-4">
-              <div className="w-32 h-32 sm:w-48 sm:h-48 brutal-border brutal-shadow flex-shrink-0" style={{
-                background: (()=>{ const entries = Object.entries(categoryTotals); const total = entries.reduce((a,[_n,v])=>a+v,0)||1; let acc=0; return `conic-gradient(${entries.map(([n,v],i)=>{ const start=Math.round((acc/total)*360); acc+=v; const end=Math.round((acc/total)*360); return `hsl(${(i*57)%360} 70% 50%) ${start}deg ${end}deg`; }).join(', ')})`; })()
-              }}></div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                {Object.entries(categoryTotals).map(([name,total],i)=> (
-                  <div key={name} className="px-3 py-2 brutal-card bg-orange-50 dark:bg-orange-100 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 min-w-0"><span className="inline-block w-3 h-3 brutal-border" style={{ backgroundColor:`hsl(${(i*57)%360} 70% 50%)` }}></span><span className="text-black font-black text-xs truncate uppercase tracking-wide">{name}</span></span>
-                    <span className="text-black text-xs font-black whitespace-nowrap">₹{Math.round(total).toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {loading ? (
           <div className="p-6 text-black font-black text-lg uppercase tracking-wide">Loading categories...</div>
@@ -218,11 +199,24 @@ const Categories = () => {
           <div className="p-6 text-black font-bold text-base">No categories yet. Add your first one above.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((cat, i) => {
-              const budget = getBudgetForCategory(cat._id);
-              const spent = categoryTotals[cat.name] || 0;
-              const isExceeded = budget && spent >= budget.budgetAmount;
-              const isNearThreshold = budget && spent >= (budget.budgetAmount * budget.alertThreshold / 100);
+            {categories
+              .map((cat, i) => {
+                const budget = getBudgetForCategory(cat._id);
+                const spent = categoryTotals[cat.name] || 0;
+                const isExceeded = budget && spent >= budget.budgetAmount;
+                const isNearThreshold = budget && spent >= (budget.budgetAmount * budget.alertThreshold / 100);
+                
+                return { cat, budget, spent, isExceeded, isNearThreshold };
+              })
+              .sort((a, b) => {
+                // Sort by: exceeded budgets first, then near threshold, then normal
+                if (a.isExceeded && !b.isExceeded) return -1;
+                if (!a.isExceeded && b.isExceeded) return 1;
+                if (a.isNearThreshold && !b.isNearThreshold) return -1;
+                if (!a.isNearThreshold && b.isNearThreshold) return 1;
+                return 0;
+              })
+              .map(({ cat, budget, spent, isExceeded, isNearThreshold }) => {
               
                 return (
                   <div key={cat._id} className="p-4 brutal-card bg-orange-50 dark:bg-orange-100 relative">
@@ -295,7 +289,7 @@ const Categories = () => {
                   </div>
                 </div>
               );
-            })}
+              })}
           </div>
         )}
       </div>

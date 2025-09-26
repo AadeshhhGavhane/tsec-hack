@@ -19,6 +19,7 @@ const chatRoutes = require('./routes/chat');
 const bankStatementRoutes = require('./routes/bankStatements');
 const categoryBudgetRoutes = require('./routes/categoryBudgets');
 const aiBudgetRoutes = require('./routes/aiBudget');
+const financialGoalRoutes = require('./routes/financialGoals');
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/bank-statements', bankStatementRoutes);
 app.use('/api/category-budgets', categoryBudgetRoutes);
 app.use('/api/ai-budget', aiBudgetRoutes);
+app.use('/api/financial-goals', financialGoalRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -83,6 +85,7 @@ app.get('/', (req, res) => {
       bankStatements: '/api/bank-statements',
       categoryBudgets: '/api/category-budgets',
       aiBudget: '/api/ai-budget',
+      financialGoals: '/api/financial-goals',
       health: '/health'
     }
   });
