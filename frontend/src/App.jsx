@@ -19,6 +19,7 @@ import FinancialGoals from './pages/FinancialGoals';
 import Wealth from './pages/Wealth';
 import RoundUp from './pages/RoundUp';
 import SavingsChallenges from './pages/SavingsChallenges';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <PWAInstallPrompt />
           </div>
         </Router>
       </AuthProvider>

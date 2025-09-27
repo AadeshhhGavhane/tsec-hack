@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       
       console.log('Attempting login with:', credentials.email);
+      console.log('API Base URL:', import.meta?.env?.VITE_API_BASE_URL || 'using default');
       const response = await authAPI.login(credentials);
       console.log('Login response:', response);
       
