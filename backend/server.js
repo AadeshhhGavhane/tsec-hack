@@ -20,6 +20,9 @@ const bankStatementRoutes = require('./routes/bankStatements');
 const categoryBudgetRoutes = require('./routes/categoryBudgets');
 const aiBudgetRoutes = require('./routes/aiBudget');
 const financialGoalRoutes = require('./routes/financialGoals');
+const netWorthRoutes = require('./routes/netWorth');
+const roundUpRoutes = require('./routes/roundUp');
+const savingsChallengesRoutes = require('./routes/savingsChallenges');
 
 const app = express();
 
@@ -64,6 +67,9 @@ app.use('/api/bank-statements', bankStatementRoutes);
 app.use('/api/category-budgets', categoryBudgetRoutes);
 app.use('/api/ai-budget', aiBudgetRoutes);
 app.use('/api/financial-goals', financialGoalRoutes);
+app.use('/api/net-worth', netWorthRoutes);
+app.use('/api/round-up', roundUpRoutes);
+app.use('/api/savings-challenges', savingsChallengesRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -86,6 +92,9 @@ app.get('/', (req, res) => {
       categoryBudgets: '/api/category-budgets',
       aiBudget: '/api/ai-budget',
       financialGoals: '/api/financial-goals',
+      netWorth: '/api/net-worth',
+      roundUp: '/api/round-up',
+      savingsChallenges: '/api/savings-challenges',
       health: '/health'
     }
   });

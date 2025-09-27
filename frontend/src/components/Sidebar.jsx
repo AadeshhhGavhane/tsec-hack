@@ -9,7 +9,9 @@ import {
   Tag,
   BookOpen,
   FileText,
-  Target
+  Target,
+  TrendingUp,
+  PiggyBank
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -25,6 +27,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/dashboard/transactions', icon: CreditCard, label: 'Transactions' },
     { path: '/dashboard/categories', icon: Tag, label: 'Categories' },
     { path: '/dashboard/financial-goals', icon: Target, label: 'Financial Goals' },
+    { path: '/dashboard/wealth', icon: TrendingUp, label: 'Wealth' },
+    { path: '/dashboard/round-up', icon: PiggyBank, label: 'Round-up' },
     { path: '/dashboard/bank-statements', icon: FileText, label: 'Bank Statements' },
     { path: '/dashboard/learn', icon: BookOpen, label: 'Learn' },
     { path: '/dashboard/profile', icon: User, label: 'Profile' },

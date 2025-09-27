@@ -35,7 +35,9 @@ const CreateTransactionSchema = z.object({
   category: z.string().trim().min(1),
   type: z.enum(['income', 'expense']),
   date: z.string().optional(),
-  description: z.string().trim().max(500).optional()
+  description: z.string().trim().max(500).optional(),
+  roundUpEnabled: z.boolean().optional().default(false),
+  roundUpAmount: z.number().min(0).optional().default(0)
 });
 
 const UpdateTransactionSchema = CreateTransactionSchema; // same rules

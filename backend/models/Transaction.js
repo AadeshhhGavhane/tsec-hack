@@ -39,6 +39,15 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     trim: true,
     maxlength: [500, 'Description cannot exceed 500 characters']
+  },
+  roundUpAmount: {
+    type: Number,
+    default: 0,
+    min: [0, 'Round-up amount cannot be negative']
+  },
+  roundUpEnabled: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, Tag, DollarSign, Type, Mic, Square } from 'lucide-react';
-import { transactionAPI, categoryAPI } from '../services/api';
+import { X, Calendar, Tag, DollarSign, Type, Mic, Square, PiggyBank } from 'lucide-react';
+import { transactionAPI, categoryAPI, roundUpAPI } from '../services/api';
 
 const TransactionForm = ({ 
   transaction = null, 
@@ -14,7 +14,8 @@ const TransactionForm = ({
     category: '',
     type: 'expense',
     date: new Date().toISOString().split('T')[0],
-    description: ''
+    description: '',
+    roundUpEnabled: false
   });
   const [categories, setCategories] = useState([]);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -22,6 +23,23 @@ const TransactionForm = ({
   const [errors, setErrors] = useState({});
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [roundUpAmount, setRoundUpAmount] = useState(0);
+
+  // Calculate round-up amount when amount changes
+  useEffect(() => {
+    if (formData.amount && formData.type === 'expense') {
+      const amount = parseFloat(formData.amount);
+      if (!isNaN(amount) && amount > 0) {
+        const roundedAmount = Math.ceil(amount);
+        const roundUp = roundedAmount - amount;
+        setRoundUpAmount(roundUp);
+      } else {
+        setRoundUpAmount(0);
+      }
+    } else {
+      setRoundUpAmount(0);
+    }
+  }, [formData.amount, formData.type]);
 
   useEffect(() => {
     if (isOpen) {
@@ -126,7 +144,9 @@ const TransactionForm = ({
         category: formData.category,
         type: formData.type,
         date: formData.date,
-        description: formData.description.trim()
+        description: formData.description.trim(),
+        roundUpEnabled: formData.roundUpEnabled,
+        roundUpAmount: formData.roundUpEnabled ? roundUpAmount : 0
       };
 
       let response;
@@ -371,6 +391,32 @@ const TransactionForm = ({
               placeholder="0.00"
             />
             {errors.amount && <p className="mt-1 text-sm text-black font-bold">{errors.amount}</p>}
+            
+            {/* Round-up feature for expenses */}
+            {formData.type === 'expense' && formData.amount && roundUpAmount > 0 && (
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-100 brutal-card">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <PiggyBank size={16} className="text-green-600" />
+                    <span className="text-sm font-black text-black uppercase tracking-wide">
+                      Round-up to save: ₹{roundUpAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.roundUpEnabled}
+                      onChange={(e) => setFormData(prev => ({ ...prev, roundUpEnabled: e.target.checked }))}
+                      className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <span className="text-sm font-bold text-black">Enable</span>
+                  </label>
+                </div>
+                <p className="text-xs text-black font-bold mt-1">
+                  Total will be: ₹{(parseFloat(formData.amount) + roundUpAmount).toFixed(2)}
+                </p>
+              </div>
+            )}
           </div>
 
           <div>

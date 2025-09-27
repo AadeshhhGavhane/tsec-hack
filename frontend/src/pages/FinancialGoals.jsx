@@ -14,12 +14,21 @@ const FinancialGoals = () => {
     targetAmount: '',
     targetDate: '',
     priority: 'medium',
-    category: 'other'
+    category: 'other',
+    // Debt-specific fields
+    debtType: 'credit_card',
+    interestRate: '',
+    minimumPayment: '',
+    currentBalance: '',
+    payoffStrategy: 'debt_snowball'
   });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  const [showDebtPayoff, setShowDebtPayoff] = useState(false);
+  const [debtPayoffData, setDebtPayoffData] = useState(null);
+  const [monthlyPayment, setMonthlyPayment] = useState('');
 
   useEffect(() => {
     loadGoals();
@@ -154,6 +163,39 @@ const FinancialGoals = () => {
     }
   };
 
+  const handleDebtPayoff = async (goal) => {
+    try {
+      setSubmitting(true);
+      const response = await financialGoalsAPI.getDebtPayoff(goal._id, monthlyPayment);
+      if (response.success) {
+        setSelectedGoal(goal);
+        setDebtPayoffData(response.data);
+        setShowDebtPayoff(true);
+      }
+    } catch (error) {
+      console.error('Debt payoff error:', error);
+      alert('Failed to calculate debt payoff');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDebtPayment = async (goalId, paymentAmount) => {
+    try {
+      setSubmitting(true);
+      const response = await financialGoalsAPI.recordDebtPayment(goalId, paymentAmount);
+      if (response.success) {
+        await loadGoals();
+        alert('Debt payment recorded successfully!');
+      }
+    } catch (error) {
+      console.error('Debt payment error:', error);
+      alert('Failed to record debt payment');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
 
   const resetForm = () => {
     setFormData({
@@ -162,7 +204,12 @@ const FinancialGoals = () => {
       targetAmount: '',
       targetDate: '',
       priority: 'medium',
-      category: 'other'
+      category: 'other',
+      debtType: 'credit_card',
+      interestRate: '',
+      minimumPayment: '',
+      currentBalance: '',
+      payoffStrategy: 'debt_snowball'
     });
     setEditingGoal(null);
     setShowForm(false);
@@ -277,14 +324,25 @@ const FinancialGoals = () => {
                   <Edit3 size={12} />
                   <span>Edit</span>
                 </button>
-                <button
-                  onClick={() => handleGenerateRoadmap(goal)}
-                  disabled={submitting}
-                  className="flex-1 px-2 py-1 bg-purple-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1 disabled:opacity-50"
-                >
-                  <Brain size={12} />
-                  <span>AI</span>
-                </button>
+                {goal.category === 'debt_payoff' ? (
+                  <button
+                    onClick={() => handleDebtPayoff(goal)}
+                    disabled={submitting}
+                    className="flex-1 px-2 py-1 bg-blue-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1 disabled:opacity-50"
+                  >
+                    <TrendingDown size={12} />
+                    <span>Payoff</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateRoadmap(goal)}
+                    disabled={submitting}
+                    className="flex-1 px-2 py-1 bg-purple-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1 disabled:opacity-50"
+                  >
+                    <Brain size={12} />
+                    <span>AI</span>
+                  </button>
+                )}
                 <button
                   onClick={() => handleDelete(goal._id)}
                   className="flex-1 px-2 py-1 bg-red-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-xs flex items-center justify-center gap-1"
@@ -426,6 +484,100 @@ const FinancialGoals = () => {
                 </div>
               </div>
 
+              {/* Debt-specific fields */}
+              {formData.category === 'debt_payoff' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-black text-black uppercase tracking-wide">Debt Details</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
+                        Debt Type
+                      </label>
+                      <select
+                        name="debtType"
+                        value={formData.debtType}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide text-sm"
+                      >
+                        <option value="credit_card">Credit Card</option>
+                        <option value="personal_loan">Personal Loan</option>
+                        <option value="student_loan">Student Loan</option>
+                        <option value="mortgage">Mortgage</option>
+                        <option value="car_loan">Car Loan</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
+                        Interest Rate (%)
+                      </label>
+                      <input
+                        type="number"
+                        name="interestRate"
+                        value={formData.interestRate}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide text-sm"
+                        placeholder="0"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
+                        Minimum Payment (₹)
+                      </label>
+                      <input
+                        type="number"
+                        name="minimumPayment"
+                        value={formData.minimumPayment}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide text-sm"
+                        placeholder="0"
+                        min="0"
+                        step="100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
+                        Current Balance (₹)
+                      </label>
+                      <input
+                        type="number"
+                        name="currentBalance"
+                        value={formData.currentBalance}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide text-sm"
+                        placeholder="0"
+                        min="0"
+                        step="100"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-black mb-2 uppercase tracking-wide">
+                      Payoff Strategy
+                    </label>
+                    <select
+                      name="payoffStrategy"
+                      value={formData.payoffStrategy}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 brutal-input font-bold uppercase tracking-wide text-sm"
+                    >
+                      <option value="debt_snowball">Debt Snowball (Smallest First)</option>
+                      <option value="debt_avalanche">Debt Avalanche (Highest Interest First)</option>
+                      <option value="minimum_payment">Minimum Payment Only</option>
+                      <option value="custom">Custom Strategy</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
@@ -542,6 +694,145 @@ const FinancialGoals = () => {
                   >
                     Generate Roadmap
                   </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Debt Payoff Modal */}
+      {showDebtPayoff && selectedGoal && debtPayoffData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="brutal-card w-full max-w-6xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--white)' }}>
+            <div className="flex items-center justify-between p-4 brutal-border-b-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-500 brutal-border brutal-shadow flex items-center justify-center">
+                  <TrendingDown size={20} className="text-white font-bold" />
+                </div>
+                <h2 className="text-lg font-black text-black uppercase tracking-wider">
+                  Debt Payoff: {selectedGoal.title}
+                </h2>
+              </div>
+              <button 
+                className="p-2 brutal-button brutal-shadow-hover animate-brutal-bounce"
+                onClick={() => setShowDebtPayoff(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6">
+              {debtPayoffData.payoffCalculation ? (
+                <div className="space-y-6">
+                  {/* Payoff Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="brutal-card p-4 bg-blue-50 dark:bg-blue-100 text-center">
+                      <div className="text-2xl font-black text-black">
+                        {debtPayoffData.payoffCalculation.monthsToPayoff || 'N/A'}
+                      </div>
+                      <div className="text-sm font-bold text-black">Months to Payoff</div>
+                    </div>
+                    <div className="brutal-card p-4 bg-green-50 dark:bg-green-100 text-center">
+                      <div className="text-2xl font-black text-black">
+                        {formatAmount(debtPayoffData.payoffCalculation.totalInterest)}
+                      </div>
+                      <div className="text-sm font-bold text-black">Total Interest</div>
+                    </div>
+                    <div className="brutal-card p-4 bg-orange-50 dark:bg-orange-100 text-center">
+                      <div className="text-2xl font-black text-black">
+                        {formatAmount(debtPayoffData.payoffCalculation.totalPayments)}
+                      </div>
+                      <div className="text-sm font-bold text-black">Total Payments</div>
+                    </div>
+                    <div className="brutal-card p-4 bg-purple-50 dark:bg-purple-100 text-center">
+                      <div className="text-2xl font-black text-black">
+                        {formatAmount(debtPayoffData.goal.debtDetails.currentBalance)}
+                      </div>
+                      <div className="text-sm font-bold text-black">Current Balance</div>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  {debtPayoffData.progress && (
+                    <div className="brutal-card p-4">
+                      <h3 className="text-lg font-black text-black mb-4 uppercase tracking-wide">Payoff Progress</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm font-bold text-black">
+                          <span>Paid Off: {formatAmount(debtPayoffData.progress.paidOff)}</span>
+                          <span>{Math.round(debtPayoffData.progress.progressPercentage)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                          <div 
+                            className="bg-green-500 h-4 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(debtPayoffData.progress.progressPercentage, 100)}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-xs text-black font-bold">
+                          <span>Remaining: {formatAmount(debtPayoffData.progress.remainingBalance)}</span>
+                          <span>Original: {formatAmount(debtPayoffData.progress.originalBalance)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payoff Timeline Chart */}
+                  {debtPayoffData.timeline && debtPayoffData.timeline.length > 0 && (
+                    <div className="brutal-card p-4">
+                      <h3 className="text-lg font-black text-black mb-4 uppercase tracking-wide">Payoff Timeline (First 24 Months)</h3>
+                      <div className="grid grid-cols-12 gap-1">
+                        {debtPayoffData.timeline.slice(0, 24).map((month, index) => (
+                          <div key={index} className="flex flex-col items-center">
+                            <div className="h-16 w-4 bg-gray-100 dark:bg-gray-700 rounded flex items-end overflow-hidden">
+                              <div 
+                                style={{ 
+                                  height: `${Math.min(100, (month.balance / debtPayoffData.goal.debtDetails.currentBalance) * 100)}%` 
+                                }} 
+                                className="w-full bg-red-500"
+                                title={`Month ${month.month}: ₹${Math.round(month.balance)}`}
+                              ></div>
+                            </div>
+                            <div className="text-xs text-black font-bold mt-1">
+                              {month.month}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Input */}
+                  <div className="brutal-card p-4">
+                    <h3 className="text-lg font-black text-black mb-4 uppercase tracking-wide">Record Payment</h3>
+                    <div className="flex gap-4">
+                      <input
+                        type="number"
+                        placeholder="Payment amount (₹)"
+                        className="flex-1 px-3 py-2 brutal-input font-bold uppercase tracking-wide text-sm"
+                        id="paymentAmount"
+                      />
+                      <button
+                        onClick={() => {
+                          const amount = document.getElementById('paymentAmount').value;
+                          if (amount && parseFloat(amount) > 0) {
+                            handleDebtPayment(selectedGoal._id, parseFloat(amount));
+                            setShowDebtPayoff(false);
+                          }
+                        }}
+                        className="px-4 py-2 bg-green-500 text-white font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce"
+                      >
+                        Record Payment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-blue-100 brutal-border brutal-shadow flex items-center justify-center mx-auto mb-4">
+                    <TrendingDown size={32} className="text-blue-500" />
+                  </div>
+                  <h3 className="text-lg font-black text-black mb-2 uppercase tracking-wide">Unable to Calculate Payoff</h3>
+                  <p className="text-black font-bold mb-4">Please check your debt details and try again.</p>
                 </div>
               )}
             </div>

@@ -47,6 +47,35 @@ const financialGoalSchema = new mongoose.Schema({
     enum: ['emergency_fund', 'vacation', 'home', 'car', 'education', 'retirement', 'debt_payoff', 'investment', 'other'],
     default: 'other'
   },
+  // Debt-specific fields
+  debtDetails: {
+    debtType: {
+      type: String,
+      enum: ['credit_card', 'personal_loan', 'student_loan', 'mortgage', 'car_loan', 'other'],
+      default: 'other'
+    },
+    interestRate: {
+      type: Number,
+      min: [0, 'Interest rate cannot be negative'],
+      max: [100, 'Interest rate cannot exceed 100%'],
+      default: 0
+    },
+    minimumPayment: {
+      type: Number,
+      min: [0, 'Minimum payment cannot be negative'],
+      default: 0
+    },
+    currentBalance: {
+      type: Number,
+      min: [0, 'Current balance cannot be negative'],
+      default: 0
+    },
+    payoffStrategy: {
+      type: String,
+      enum: ['debt_snowball', 'debt_avalanche', 'minimum_payment', 'custom'],
+      default: 'debt_snowball'
+    }
+  },
   aiRoadmap: {
     suggested: {
       type: Boolean,
@@ -115,6 +144,68 @@ financialGoalSchema.methods.isAchievable = function(monthlyIncome, monthlyExpens
   const availableForGoals = monthlyIncome - monthlyExpenses;
   const monthlyNeeded = this.monthlyContributionNeeded;
   return availableForGoals >= monthlyNeeded;
+};
+
+// Method to calculate debt payoff timeline
+financialGoalSchema.methods.calculateDebtPayoff = function(monthlyPayment) {
+  if (this.category !== 'debt_payoff' || !this.debtDetails) {
+    return null;
+  }
+
+  const { interestRate, currentBalance } = this.debtDetails;
+  const monthlyRate = interestRate / 100 / 12;
+  const payment = monthlyPayment || this.minimumPayment || 0;
+
+  if (payment <= 0 || currentBalance <= 0) {
+    return null;
+  }
+
+  // Calculate months to payoff using loan formula
+  let months = 0;
+  let balance = currentBalance;
+  let totalInterest = 0;
+
+  while (balance > 0.01 && months < 600) { // Max 50 years
+    const interestPayment = balance * monthlyRate;
+    const principalPayment = Math.min(payment - interestPayment, balance);
+    
+    if (principalPayment <= 0) {
+      // Payment doesn't cover interest
+      months = -1;
+      break;
+    }
+
+    balance -= principalPayment;
+    totalInterest += interestPayment;
+    months++;
+  }
+
+  return {
+    monthsToPayoff: months === -1 ? null : months,
+    totalInterest,
+    totalPayments: months === -1 ? null : months * payment,
+    finalPayment: months === -1 ? null : payment - (balance * monthlyRate)
+  };
+};
+
+// Method to get debt payoff progress
+financialGoalSchema.methods.getDebtProgress = function() {
+  if (this.category !== 'debt_payoff' || !this.debtDetails) {
+    return null;
+  }
+
+  const { currentBalance } = this.debtDetails;
+  const originalBalance = this.targetAmount;
+  const paidOff = originalBalance - currentBalance;
+  const progressPercentage = (paidOff / originalBalance) * 100;
+
+  return {
+    originalBalance,
+    currentBalance,
+    paidOff,
+    progressPercentage: Math.min(progressPercentage, 100),
+    remainingBalance: currentBalance
+  };
 };
 
 module.exports = mongoose.model('FinancialGoal', financialGoalSchema);

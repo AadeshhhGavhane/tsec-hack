@@ -290,6 +290,112 @@ export const financialGoalsAPI = {
   generateRoadmap: async (goalId) => {
     const response = await api.post(`/financial-goals/${goalId}/ai-roadmap`);
     return response.data;
+  },
+
+  // Debt payoff specific functions
+  getDebtPayoff: async (goalId, monthlyPayment) => {
+    const response = await api.get(`/financial-goals/${goalId}/debt-payoff?monthlyPayment=${monthlyPayment || ''}`);
+    return response.data;
+  },
+
+  recordDebtPayment: async (goalId, paymentAmount, paymentDate) => {
+    const response = await api.patch(`/financial-goals/${goalId}/debt-payment`, {
+      paymentAmount,
+      paymentDate: paymentDate || new Date().toISOString()
+    });
+    return response.data;
+  },
+
+  getDebtSummary: async () => {
+    const response = await api.get('/financial-goals/debt-summary');
+    return response.data;
+  }
+};
+
+// Round-up API functions
+export const roundUpAPI = {
+  getSummary: async (months = 6) => {
+    const response = await api.get(`/round-up/summary?months=${months}`);
+    return response.data;
+  },
+
+  getTrend: async (months = 12) => {
+    const response = await api.get(`/round-up/trend?months=${months}`);
+    return response.data;
+  },
+
+  getRecent: async (limit = 20) => {
+    const response = await api.get(`/round-up/recent?limit=${limit}`);
+    return response.data;
+  },
+
+  transfer: async (goalId = null) => {
+    const response = await api.post('/round-up/transfer', { goalId });
+    return response.data;
+  },
+
+  toggle: async (transactionId, enabled) => {
+    const response = await api.patch(`/round-up/toggle/${transactionId}`, { enabled });
+    return response.data;
+  },
+
+  getSettings: async () => {
+    const response = await api.get('/round-up/settings');
+    return response.data;
+  }
+};
+
+// Savings Challenges API functions
+export const savingsChallengesAPI = {
+  getAvailable: async (category, difficulty) => {
+    const params = new URLSearchParams();
+    if (category) params.append('category', category);
+    if (difficulty) params.append('difficulty', difficulty);
+    const response = await api.get(`/savings-challenges/available?${params}`);
+    return response.data;
+  },
+
+  getMyChallenges: async (status) => {
+    const params = status ? `?status=${status}` : '';
+    const response = await api.get(`/savings-challenges/my-challenges${params}`);
+    return response.data;
+  },
+
+  joinChallenge: async (challengeId) => {
+    const response = await api.post(`/savings-challenges/join/${challengeId}`);
+    return response.data;
+  },
+
+  leaveChallenge: async (challengeId) => {
+    const response = await api.post(`/savings-challenges/leave/${challengeId}`);
+    return response.data;
+  },
+
+  updateProgress: async (challengeId, progressValue) => {
+    const response = await api.patch(`/savings-challenges/progress/${challengeId}`, {
+      progressValue
+    });
+    return response.data;
+  },
+
+  getLeaderboard: async (challengeId, limit = 10) => {
+    const response = await api.get(`/savings-challenges/leaderboard/${challengeId}?limit=${limit}`);
+    return response.data;
+  },
+
+  getAchievements: async (limit = 20) => {
+    const response = await api.get(`/savings-challenges/achievements?limit=${limit}`);
+    return response.data;
+  },
+
+  autoUpdate: async () => {
+    const response = await api.post('/savings-challenges/auto-update');
+    return response.data;
+  },
+
+  getCategories: async () => {
+    const response = await api.get('/savings-challenges/categories');
+    return response.data;
   }
 };
 
@@ -343,6 +449,39 @@ export const bankStatementAPI = {
 
   chatWithFile: async (fileId, messages) => {
     const response = await api.post(`/bank-statements/chat/${fileId}`, { messages });
+    return response.data;
+  }
+};
+
+// Net Worth API functions
+export const netWorthAPI = {
+  getCurrent: async () => {
+    const response = await api.get('/net-worth/current');
+    return response.data;
+  },
+
+  getTrend: async (months = 12) => {
+    const response = await api.get(`/net-worth/trend?months=${months}`);
+    return response.data;
+  },
+
+  createSnapshot: async (assets, liabilities) => {
+    const response = await api.post('/net-worth/snapshot', { assets, liabilities });
+    return response.data;
+  },
+
+  getHistory: async (page = 1, limit = 10) => {
+    const response = await api.get(`/net-worth/history?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  getStats: async () => {
+    const response = await api.get('/net-worth/stats');
+    return response.data;
+  },
+
+  deleteSnapshot: async (id) => {
+    const response = await api.delete(`/net-worth/${id}`);
     return response.data;
   }
 };

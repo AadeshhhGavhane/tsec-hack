@@ -380,4 +380,191 @@ Return ONLY a valid JSON object with this structure:
   }
 });
 
+// Get debt payoff visualization for a specific goal
+router.get('/:goalId/debt-payoff', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { monthlyPayment } = req.query;
+
+    const goal = await FinancialGoal.findOne({
+      _id: goalId,
+      userId: req.userId,
+      category: 'debt_payoff'
+    });
+
+    if (!goal) {
+      return res.status(404).json({
+        success: false,
+        message: 'Debt payoff goal not found'
+      });
+    }
+
+    // Calculate payoff details
+    const payoffCalculation = goal.calculateDebtPayoff(parseFloat(monthlyPayment));
+    const progress = goal.getDebtProgress();
+
+    // Generate payoff timeline (monthly breakdown)
+    const timeline = [];
+    if (payoffCalculation && payoffCalculation.monthsToPayoff) {
+      const { interestRate, currentBalance } = goal.debtDetails;
+      const monthlyRate = interestRate / 100 / 12;
+      const payment = parseFloat(monthlyPayment) || goal.debtDetails.minimumPayment || 0;
+      
+      let balance = currentBalance;
+      let totalInterest = 0;
+      let totalPrincipal = 0;
+
+      for (let month = 1; month <= Math.min(payoffCalculation.monthsToPayoff, 60); month++) {
+        const interestPayment = balance * monthlyRate;
+        const principalPayment = Math.min(payment - interestPayment, balance);
+        
+        balance -= principalPayment;
+        totalInterest += interestPayment;
+        totalPrincipal += principalPayment;
+
+        timeline.push({
+          month,
+          balance: Math.max(balance, 0),
+          interestPayment,
+          principalPayment,
+          totalInterest,
+          totalPrincipal
+        });
+
+        if (balance <= 0.01) break;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        goal: {
+          title: goal.title,
+          targetAmount: goal.targetAmount,
+          debtDetails: goal.debtDetails
+        },
+        payoffCalculation,
+        progress,
+        timeline: timeline.slice(0, 24) // Return first 24 months
+      }
+    });
+  } catch (error) {
+    console.error('Debt payoff calculation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to calculate debt payoff'
+    });
+  }
+});
+
+// Update debt balance (when making payments)
+router.patch('/:goalId/debt-payment', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { paymentAmount, paymentDate } = req.body;
+
+    if (!paymentAmount || paymentAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment amount must be greater than 0'
+      });
+    }
+
+    const goal = await FinancialGoal.findOne({
+      _id: goalId,
+      userId: req.userId,
+      category: 'debt_payoff'
+    });
+
+    if (!goal) {
+      return res.status(404).json({
+        success: false,
+        message: 'Debt payoff goal not found'
+      });
+    }
+
+    // Update current balance
+    const newBalance = Math.max(goal.debtDetails.currentBalance - paymentAmount, 0);
+    goal.debtDetails.currentBalance = newBalance;
+    
+    // Update current amount (for progress tracking)
+    goal.currentAmount = goal.targetAmount - newBalance;
+
+    // Mark as completed if balance is 0
+    if (newBalance <= 0.01) {
+      goal.status = 'completed';
+      goal.currentAmount = goal.targetAmount;
+    }
+
+    await goal.save();
+
+    res.json({
+      success: true,
+      message: 'Debt payment recorded successfully',
+      data: {
+        goal: {
+          ...goal.toObject(),
+          progressPercentage: goal.targetAmount === 0 ? 0 : Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Debt payment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to record debt payment'
+    });
+  }
+});
+
+// Get debt payoff summary for all debt goals
+router.get('/debt-summary', authenticateToken, async (req, res) => {
+  try {
+    const debtGoals = await FinancialGoal.find({
+      userId: req.userId,
+      category: 'debt_payoff',
+      status: 'active'
+    });
+
+    const summary = {
+      totalDebt: 0,
+      totalMinimumPayments: 0,
+      totalInterestRate: 0,
+      goals: []
+    };
+
+    debtGoals.forEach(goal => {
+      const { currentBalance, minimumPayment, interestRate } = goal.debtDetails;
+      const progress = goal.getDebtProgress();
+      
+      summary.totalDebt += currentBalance;
+      summary.totalMinimumPayments += minimumPayment;
+      summary.totalInterestRate += interestRate;
+      
+      summary.goals.push({
+        id: goal._id,
+        title: goal.title,
+        currentBalance,
+        minimumPayment,
+        interestRate,
+        progress: progress ? progress.progressPercentage : 0,
+        payoffCalculation: goal.calculateDebtPayoff()
+      });
+    });
+
+    summary.averageInterestRate = debtGoals.length > 0 ? summary.totalInterestRate / debtGoals.length : 0;
+
+    res.json({
+      success: true,
+      data: { summary }
+    });
+  } catch (error) {
+    console.error('Debt summary error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get debt summary'
+    });
+  }
+});
+
 module.exports = router;

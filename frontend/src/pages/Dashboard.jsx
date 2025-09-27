@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
-import { transactionAPI, insightsAPI } from '../services/api';
+import { TrendingUp, TrendingDown, Calendar, Building2 } from 'lucide-react';
+import { transactionAPI, insightsAPI, netWorthAPI } from '../services/api';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [recent, setRecent] = useState([]);
   const [categoryTotals, setCategoryTotals] = useState({});
+  const [netWorth, setNetWorth] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -29,6 +30,16 @@ const Dashboard = () => {
           }
         } catch (error) {
           console.error('Error fetching spending insights:', error);
+        }
+
+        // Load net worth data
+        try {
+          const netWorthResponse = await netWorthAPI.getCurrent();
+          if (netWorthResponse.success) {
+            setNetWorth(netWorthResponse.data.netWorth);
+          }
+        } catch (error) {
+          console.error('Error fetching net worth:', error);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -60,7 +71,7 @@ const Dashboard = () => {
       </div>
 
       {/* Finance Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="brutal-card p-4 bg-green-50 dark:bg-green-100">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-500 brutal-border brutal-shadow flex items-center justify-center">
@@ -91,6 +102,21 @@ const Dashboard = () => {
             <div>
               <div className="text-sm font-black text-black uppercase tracking-wide">Balance</div>
               <div className={`text-xl font-black ${summary.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatAmount(summary.balance)}</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Net Worth Card */}
+        <div className="brutal-card p-4 bg-purple-50 dark:bg-purple-100">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-500 brutal-border brutal-shadow flex items-center justify-center">
+              <Building2 size={24} className="text-black font-bold" />
+            </div>
+            <div>
+              <div className="text-sm font-black text-black uppercase tracking-wide">Net Worth</div>
+              <div className={`text-xl font-black ${netWorth?.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {netWorth ? formatAmount(netWorth.netWorth) : 'N/A'}
+              </div>
             </div>
           </div>
         </div>

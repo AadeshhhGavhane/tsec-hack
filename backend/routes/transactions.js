@@ -3,6 +3,7 @@ const express = require('express');
 const Transaction = require('../models/Transaction');
 const Category = require('../models/Category');
 const HiddenCategory = require('../models/HiddenCategory');
+const RoundUp = require('../models/RoundUp');
 const { authenticateToken } = require('../middleware/auth');
 const { parseBody, CreateTransactionSchema, UpdateTransactionSchema } = require('../middleware/validation');
 const multer = require('multer');
@@ -429,7 +430,7 @@ router.post('/', authenticateToken, (req, res, next) => {
   next();
 }, parseBody(CreateTransactionSchema), async (req, res) => {
   try {
-    const { title, amount, category, type, date, description } = req.body;
+    const { title, amount, category, type, date, description, roundUpEnabled, roundUpAmount } = req.body;
     const userId = req.userId;
 
     // Verify category exists and belongs to user or is default
@@ -479,10 +480,26 @@ router.post('/', authenticateToken, (req, res, next) => {
       category,
       type,
       date: transactionDate,
-      description
+      description,
+      roundUpEnabled: roundUpEnabled || false,
+      roundUpAmount: roundUpAmount || 0
     });
 
     await transaction.save();
+
+    // Create round-up record if enabled
+    if (roundUpEnabled && roundUpAmount > 0 && type === 'expense') {
+      const roundedAmount = Math.ceil(amount);
+      const roundUp = new RoundUp({
+        userId,
+        transactionId: transaction._id,
+        originalAmount: amount,
+        roundUpAmount: roundUpAmount,
+        roundedAmount: roundedAmount,
+        status: 'pending'
+      });
+      await roundUp.save();
+    }
 
     res.status(201).json({
       success: true,
@@ -509,7 +526,7 @@ router.put('/:id', authenticateToken, (req, res, next) => {
   next();
 }, parseBody(UpdateTransactionSchema), async (req, res) => {
   try {
-    const { title, amount, category, type, date, description } = req.body;
+    const { title, amount, category, type, date, description, roundUpEnabled, roundUpAmount } = req.body;
     const userId = req.userId;
 
     // Verify category exists and belongs to user or is default
@@ -533,7 +550,9 @@ router.put('/:id', authenticateToken, (req, res, next) => {
         category,
         type,
         date: date ? new Date(date) : undefined,
-        description
+        description,
+        roundUpEnabled: roundUpEnabled || false,
+        roundUpAmount: roundUpAmount || 0
       },
       { new: true, runValidators: true }
     );
@@ -543,6 +562,34 @@ router.put('/:id', authenticateToken, (req, res, next) => {
         success: false,
         message: 'Transaction not found'
       });
+    }
+
+    // Handle round-up for updates
+    if (roundUpEnabled && roundUpAmount > 0 && type === 'expense') {
+      // Check if round-up already exists
+      let roundUp = await RoundUp.findOne({ transactionId: transaction._id });
+      
+      if (roundUp) {
+        // Update existing round-up
+        roundUp.roundUpAmount = roundUpAmount;
+        roundUp.roundedAmount = Math.ceil(amount);
+        await roundUp.save();
+      } else {
+        // Create new round-up
+        const roundedAmount = Math.ceil(amount);
+        roundUp = new RoundUp({
+          userId,
+          transactionId: transaction._id,
+          originalAmount: amount,
+          roundUpAmount: roundUpAmount,
+          roundedAmount: roundedAmount,
+          status: 'pending'
+        });
+        await roundUp.save();
+      }
+    } else {
+      // Remove round-up if disabled
+      await RoundUp.deleteOne({ transactionId: transaction._id });
     }
 
     res.json({
