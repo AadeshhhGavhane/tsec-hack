@@ -199,22 +199,47 @@ const Profile = () => {
               <KeySquare size={20} className="text-black font-bold" />
               <h3 className="text-lg font-black text-black uppercase tracking-wide">Security: Passkeys</h3>
             </div>
-            <button disabled onClick={async ()=>{
+            <button onClick={async ()=>{
               try {
-                setPasskeyMsg('');
+                console.log('Starting passkey registration...');
+                setPasskeyMsg('Starting passkey registration...');
+                
+                console.log('Calling passkeysAPI.beginRegister()...');
                 const begin = await passkeysAPI.beginRegister();
-                if (!begin.success) return setPasskeyMsg(begin.message||'Failed to start');
+                console.log('Begin response:', begin);
+                
+                if (!begin.success) {
+                  console.error('Begin failed:', begin.message);
+                  return setPasskeyMsg(begin.message||'Failed to start');
+                }
+                
+                console.log('Creating credential...');
                 const pub = begin.data.options.publicKey;
+                console.log('Public key options:', pub);
+                
                 const cred = await navigator.credentials.create({ publicKey: {
                   ...pub,
                   challenge: b64urlToBytes(pub.challenge),
                   user: { ...pub.user, id: b64urlToBytes(pub.user.id) }
                 }});
+                console.log('Credential created:', cred);
+                
                 const attObj = cred.response.attestationObject ? btoa(String.fromCharCode(...new Uint8Array(cred.response.attestationObject))) : undefined;
                 const clientDataJSON = btoa(String.fromCharCode(...new Uint8Array(cred.response.clientDataJSON)));
+                
+                console.log('Finishing registration...');
                 const finish = await passkeysAPI.finishRegister({ id: cred.id, rawId: cred.id, type: cred.type, response: { attestationObject: attObj, clientDataJSON } });
-                if (!finish.success) setPasskeyMsg(finish.message||'Failed to add passkey'); else setPasskeyMsg('Passkey added');
-              } catch (e) { setPasskeyMsg('Passkey not supported or cancelled'); }
+                console.log('Finish response:', finish);
+                
+                if (!finish.success) {
+                  setPasskeyMsg(finish.message||'Failed to add passkey');
+                } else {
+                  setPasskeyMsg('Passkey added successfully!');
+                }
+              } catch (e) { 
+                console.error('Passkey error:', e);
+                setPasskeyMsg('Passkey not supported or cancelled: ' + e.message);
+              }
             }} className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-black font-black uppercase tracking-wide brutal-button brutal-shadow-hover animate-brutal-bounce text-sm"><Plus size={16} /> Add Passkey</button>
           </div>
           {passkeyMsg && <div className="text-sm font-bold text-black mb-3">{passkeyMsg}</div>}
