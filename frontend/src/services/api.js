@@ -3,7 +3,12 @@ import axios from 'axios';
 // Prefer explicit env, otherwise infer from current host (works on LAN/mobile)
 const inferredHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 const isHttps = typeof window !== 'undefined' ? window.location.protocol === 'https:' : false;
-const API_BASE_URL = (import.meta?.env?.VITE_API_BASE_URL) || `${isHttps ? 'https' : 'http'}://${inferredHost}:5000/api`;
+
+// For production, use Railway backend URL
+const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
+const API_BASE_URL = (import.meta?.env?.VITE_API_BASE_URL) || 
+  (isProduction ? 'https://tsec-hack-production.up.railway.app/api' : 
+   `${isHttps ? 'https' : 'http'}://${inferredHost}:5000/api`);
 
 // Create axios instance
 const api = axios.create({
