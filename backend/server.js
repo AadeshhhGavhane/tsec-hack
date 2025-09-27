@@ -71,6 +71,16 @@ app.use('/api/net-worth', netWorthRoutes);
 app.use('/api/round-up', roundUpRoutes);
 app.use('/api/savings-challenges', savingsChallengesRoutes);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API is healthy',
+    timestamp: new Date(),
+    environment: config.NODE_ENV
+  });
+});
+
 // Root route
 app.get('/', (req, res) => {
   res.json({
