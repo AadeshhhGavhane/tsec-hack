@@ -12,8 +12,8 @@ const crypto = require('crypto');
 
 const router = express.Router();
 
-const rpId = (process.env.RP_ID || 'localhost');
-const origin = (process.env.FRONTEND_URL || 'http://localhost:5173');
+const rpId = (process.env.RP_ID || 'tsec-hack.vercel.app');
+const origin = (process.env.FRONTEND_URL || 'https://tsec-hack.vercel.app');
 
 // Simple in-memory challenge store
 const challenges = new Map(); // key: key, value: { userId, type, challenge, email? }

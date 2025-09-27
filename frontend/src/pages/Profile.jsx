@@ -199,7 +199,7 @@ const Profile = () => {
               <KeySquare size={20} className="text-black font-bold" />
               <h3 className="text-lg font-black text-black uppercase tracking-wide">Security: Passkeys</h3>
             </div>
-            <button onClick={async ()=>{
+            <button disabled onClick={async ()=>{
               try {
                 setPasskeyMsg('');
                 const begin = await passkeysAPI.beginRegister();
